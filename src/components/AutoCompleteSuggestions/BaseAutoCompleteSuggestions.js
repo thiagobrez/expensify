@@ -7,6 +7,7 @@ import styles from '../../styles/styles';
 import * as StyleUtils from '../../styles/StyleUtils';
 import CONST from '../../CONST';
 import {propTypes} from './autoCompleteSuggestionsPropTypes';
+import Modal from '../Modal';
 
 /**
  * @param {Number} numRows
@@ -46,7 +47,9 @@ const BaseAutoCompleteSuggestions = (props) => {
     const rowHeight = measureHeightOfSuggestionRows(props.suggestions.length, props.isSuggestionPickerLarge);
 
     return (
-        <View
+        <Modal
+            isVisible={props.visible}
+            type={CONST.MODAL.MODAL_TYPE.CENTERED}
             ref={props.forwardedRef}
             style={[styles.autoCompleteSuggestionsContainer, StyleUtils.getAutoCompleteSuggestionContainerStyle(rowHeight, props.shouldIncludeReportRecipientLocalTimeHeight)]}
         >
@@ -58,7 +61,7 @@ const BaseAutoCompleteSuggestions = (props) => {
                 removeClippedSubviews={false}
                 style={{height: rowHeight}}
             />
-        </View>
+        </Modal>
     );
 };
 

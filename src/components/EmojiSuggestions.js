@@ -45,6 +45,9 @@ const propTypes = {
 
     /** Stores user's preferred skin tone */
     preferredSkinToneIndex: PropTypes.number.isRequired,
+
+    /** Whether the suggestions modal is visible or not */
+    visible: PropTypes.bool.isRequired,
 };
 
 const defaultProps = {highlightedEmojiIndex: 0};
@@ -87,6 +90,7 @@ const EmojiSuggestions = (props) => {
 
     return (
         <AutoCompleteSuggestions
+            visible={props.visible}
             suggestions={props.emojis}
             renderSuggestionMenuItem={renderSuggestionMenuItem}
             keyExtractor={keyExtractor}

@@ -54,6 +54,9 @@ import * as Welcome from '../../../libs/actions/Welcome';
 import Permissions from '../../../libs/Permissions';
 import * as TaskUtils from '../../../libs/actions/Task';
 import * as OptionsListUtils from '../../../libs/OptionsListUtils';
+import Modal from '../../../components/Modal';
+import toggleTestToolsModal from '../../../libs/actions/TestTool';
+import Text from '../../../components/Text';
 
 const propTypes = {
     /** Beta features list */
@@ -244,6 +247,8 @@ class ReportActionCompose extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        console.log('this.state.suggestedEmojis', this.state.suggestedEmojis);
+
         const sidebarOpened = !prevProps.isDrawerOpen && this.props.isDrawerOpen;
         if (sidebarOpened) {
             ComposerActions.setShouldShowComposeInput(true);
@@ -278,6 +283,8 @@ class ReportActionCompose extends React.Component {
     }
 
     onSelectionChange(e) {
+        console.log('selectionchange');
+
         LayoutAnimation.configureNext(LayoutAnimation.create(50, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
         this.setState({selection: e.nativeEvent.selection});
         this.calculateEmojiSuggestion();
@@ -1035,7 +1042,11 @@ class ReportActionCompose extends React.Component {
                                                 onClick={this.setShouldBlockEmojiCalcToFalse}
                                                 onPasteFile={displayFileInModal}
                                                 shouldClear={this.state.textInputShouldClear}
-                                                onClear={() => this.setTextInputShouldClear(false)}
+                                                onClear={() => {
+                                                    this.setTextInputShouldClear(false);
+                                                    // TODO: CASE 1
+                                                    // this.resetSuggestions();
+                                                }}
                                                 isDisabled={isComposeDisabled || isBlockedFromConcierge || this.props.disabled}
                                                 selection={this.state.selection}
                                                 onSelectionChange={this.onSelectionChange}
@@ -1110,6 +1121,33 @@ class ReportActionCompose extends React.Component {
                     </View>
                 </OfflineWithFeedback>
                 {this.state.isDraggingOver && <ReportDropUI />}
+
+                {/* <PopoverMenu */}
+                {/*     animationInTiming={CONST.ANIMATION_IN_TIMING} */}
+                {/*     isVisible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu} */}
+                {/*     onClose={() => {}} */}
+                {/*     onItemSelected={() => {}} */}
+                {/*     anchorPosition={styles.createMenuPositionReportActionCompose} */}
+                {/*     menuItems={[ */}
+                {/*         { */}
+                {/*             icon: Expensicons.Paperclip, */}
+                {/*             text: '😀', */}
+                {/*             onSelected: () => { */}
+                {/*                 this.insertSelectedEmoji(0); */}
+                {/*             }, */}
+                {/*         }, */}
+                {/*     ]} */}
+                {/* /> */}
+
+                {/* <Modal */}
+                {/*     type={CONST.MODAL.MODAL_TYPE.CENTERED} */}
+                {/*     isVisible */}
+                {/* > */}
+                {/*     <View style={{width: 200, height: 200, backgroundColor: 'darkred'}}> */}
+                {/*         <Text>Testing</Text> */}
+                {/*     </View> */}
+                {/* </Modal> */}
+
                 {!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu && (
                     <ArrowKeyFocusManager
                         focusedIndex={this.state.highlightedEmojiIndex}
@@ -1118,6 +1156,7 @@ class ReportActionCompose extends React.Component {
                         onFocusedIndexChanged={(index) => this.setState({highlightedEmojiIndex: index})}
                     >
                         <EmojiSuggestions
+                            visible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu}
                             onClose={() => this.setState({suggestedEmojis: []})}
                             highlightedEmojiIndex={this.state.highlightedEmojiIndex}
                             emojis={this.state.suggestedEmojis}
@@ -1134,29 +1173,30 @@ class ReportActionCompose extends React.Component {
                         />
                     </ArrowKeyFocusManager>
                 )}
-                {!_.isEmpty(this.state.suggestedMentions) && this.state.shouldShowMentionSuggestionMenu && (
-                    <ArrowKeyFocusManager
-                        focusedIndex={this.state.highlightedMentionIndex}
-                        maxIndex={getMaxArrowIndex(this.state.suggestedMentions.length, this.state.isAutoSuggestionPickerLarge)}
-                        shouldExcludeTextAreaNodes={false}
-                        onFocusedIndexChanged={(index) => this.setState({highlightedMentionIndex: index})}
-                    >
-                        <MentionSuggestions
-                            onClose={() => this.setState({suggestedMentions: []})}
-                            highlightedMentionIndex={this.state.highlightedMentionIndex}
-                            mentions={this.state.suggestedMentions}
-                            comment={this.state.value}
-                            updateComment={(newComment) => this.setState({value: newComment})}
-                            colonIndex={this.state.colonIndex}
-                            prefix={this.state.mentionPrefix}
-                            onSelect={this.insertSelectedMention}
-                            isComposerFullSize={this.props.isComposerFullSize}
-                            isMentionPickerLarge={this.state.isAutoSuggestionPickerLarge}
-                            composerHeight={this.state.composerHeight}
-                            shouldIncludeReportRecipientLocalTimeHeight={shouldShowReportRecipientLocalTime}
-                        />
-                    </ArrowKeyFocusManager>
-                )}
+
+                {/* {!_.isEmpty(this.state.suggestedMentions) && this.state.shouldShowMentionSuggestionMenu && ( */}
+                {/*     <ArrowKeyFocusManager */}
+                {/*         focusedIndex={this.state.highlightedMentionIndex} */}
+                {/*         maxIndex={getMaxArrowIndex(this.state.suggestedMentions.length, this.state.isAutoSuggestionPickerLarge)} */}
+                {/*         shouldExcludeTextAreaNodes={false} */}
+                {/*         onFocusedIndexChanged={(index) => this.setState({highlightedMentionIndex: index})} */}
+                {/*     > */}
+                {/*         <MentionSuggestions */}
+                {/*             onClose={() => this.setState({suggestedMentions: []})} */}
+                {/*             highlightedMentionIndex={this.state.highlightedMentionIndex} */}
+                {/*             mentions={this.state.suggestedMentions} */}
+                {/*             comment={this.state.value} */}
+                {/*             updateComment={(newComment) => this.setState({value: newComment})} */}
+                {/*             colonIndex={this.state.colonIndex} */}
+                {/*             prefix={this.state.mentionPrefix} */}
+                {/*             onSelect={this.insertSelectedMention} */}
+                {/*             isComposerFullSize={this.props.isComposerFullSize} */}
+                {/*             isMentionPickerLarge={this.state.isAutoSuggestionPickerLarge} */}
+                {/*             composerHeight={this.state.composerHeight} */}
+                {/*             shouldIncludeReportRecipientLocalTimeHeight={shouldShowReportRecipientLocalTime} */}
+                {/*         /> */}
+                {/*     </ArrowKeyFocusManager> */}
+                {/* )} */}
             </View>
         );
     }

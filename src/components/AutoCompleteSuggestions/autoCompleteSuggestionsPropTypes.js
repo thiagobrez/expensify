@@ -24,6 +24,9 @@ const propTypes = {
 
     /** Show that we should include ReportRecipientLocalTime view height */
     shouldIncludeReportRecipientLocalTimeHeight: PropTypes.bool.isRequired,
+
+    /** Whether the suggestions modal is visible or not */
+    visible: PropTypes.bool.isRequired,
 };
 
 const defaultProps = {};
