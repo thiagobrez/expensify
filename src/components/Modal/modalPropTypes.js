@@ -3,10 +3,20 @@ import _ from 'underscore';
 import CONST from '../../CONST';
 import {windowDimensionsPropTypes} from '../withWindowDimensions';
 import stylePropTypes from '../../styles/stylePropTypes';
+import themeColors from '../../styles/themes/default';
 
 const propTypes = {
-    /** Decides whether the modal should cover fullscreen. FullScreen modal has backdrop */
-    fullscreen: PropTypes.bool,
+    // /** Decides whether the modal should cover fullscreen. FullScreen modal has backdrop */
+    // fullscreen: PropTypes.bool,
+
+    /** Should the Modal have backdrop */
+    hasBackdrop: PropTypes.bool,
+
+    /** Color of the backdrop */
+    backdropColor: PropTypes.string,
+
+    /** Should the modal cover fullscreen */
+    coverScreen: PropTypes.bool,
 
     /** Should we close modal on outside click */
     shouldCloseOnOutsideClick: PropTypes.bool,
@@ -59,7 +69,11 @@ const propTypes = {
 };
 
 const defaultProps = {
-    fullscreen: true,
+    // TODO: Change all other occurences of `fullscreen`
+    // fullscreen: true,
+    hasBackdrop: true,
+    backdropColor: themeColors.overlay,
+    coverScreen: true,
     shouldCloseOnOutsideClick: false,
     shouldSetModalVisibility: true,
     onSubmit: null,

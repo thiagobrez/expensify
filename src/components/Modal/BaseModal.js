@@ -31,6 +31,8 @@ class BaseModal extends PureComponent {
     }
 
     componentDidMount() {
+        console.log('test');
+
         if (!this.props.isVisible) {
             return;
         }
@@ -121,11 +123,11 @@ class BaseModal extends PureComponent {
                 onSwipeComplete={this.props.onClose}
                 swipeDirection={swipeDirection}
                 isVisible={this.props.isVisible}
-                backdropColor={themeColors.overlay}
+                backdropColor={this.props.backdropColor}
                 backdropOpacity={hideBackdrop ? 0 : variables.overlayOpacity}
                 backdropTransitionOutTiming={0}
-                hasBackdrop={this.props.fullscreen}
-                coverScreen={this.props.fullscreen}
+                hasBackdrop={this.props.hasBackdrop}
+                coverScreen={this.props.coverScreen}
                 style={modalStyle}
                 // When `statusBarTranslucent` is true on Android, the modal fully covers the status bar.
                 // Since `windowHeight` doesn't include status bar height, it should be added in the `deviceHeight` calculation.

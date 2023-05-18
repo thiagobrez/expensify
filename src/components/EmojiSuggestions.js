@@ -47,7 +47,10 @@ const propTypes = {
     preferredSkinToneIndex: PropTypes.number.isRequired,
 
     /** Whether the suggestions modal is visible or not */
-    visible: PropTypes.bool.isRequired,
+    isVisible: PropTypes.bool.isRequired,
+
+    /** Fired when the modal is closed */
+    onClose: PropTypes.func.isRequired,
 };
 
 const defaultProps = {highlightedEmojiIndex: 0};
@@ -90,7 +93,9 @@ const EmojiSuggestions = (props) => {
 
     return (
         <AutoCompleteSuggestions
-            visible={props.visible}
+            onModalShow={props.onModalShow}
+            isVisible={props.isVisible}
+            onClose={props.onClose}
             suggestions={props.emojis}
             renderSuggestionMenuItem={renderSuggestionMenuItem}
             keyExtractor={keyExtractor}

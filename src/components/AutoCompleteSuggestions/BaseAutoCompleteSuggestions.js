@@ -8,6 +8,7 @@ import * as StyleUtils from '../../styles/StyleUtils';
 import CONST from '../../CONST';
 import {propTypes} from './autoCompleteSuggestionsPropTypes';
 import Modal from '../Modal';
+import themeColors from '../../styles/themes/default';
 
 /**
  * @param {Number} numRows
@@ -48,10 +49,20 @@ const BaseAutoCompleteSuggestions = (props) => {
 
     return (
         <Modal
-            isVisible={props.visible}
-            type={CONST.MODAL.MODAL_TYPE.CENTERED}
-            ref={props.forwardedRef}
-            style={[styles.autoCompleteSuggestionsContainer, StyleUtils.getAutoCompleteSuggestionContainerStyle(rowHeight, props.shouldIncludeReportRecipientLocalTimeHeight)]}
+            isVisible={props.isVisible}
+            onClose={props.onClose}
+            onModalShow={props.onModalShow}
+            type={CONST.MODAL.MODAL_TYPE.CENTERED_SMALL}
+            coverScreen={false}
+            backdropColor={themeColors.transparent}
+            shouldCloseOnOutsideClick={true}
+            // hasBackdrop={false}
+            // fullscreen={false}
+            // ref={props.forwardedRef}
+            innerContainerStyle={{
+                ...styles.autoCompleteSuggestionsContainer,
+                ...StyleUtils.getAutoCompleteSuggestionContainerStyle(rowHeight, props.shouldIncludeReportRecipientLocalTimeHeight),
+            }}
         >
             <FlatList
                 keyboardShouldPersistTaps="handled"

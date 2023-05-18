@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import withWindowDimensions from '../withWindowDimensions';
 import BaseModal from './BaseModal';
 import {propTypes, defaultProps} from './modalPropTypes';
@@ -6,6 +6,26 @@ import * as StyleUtils from '../../styles/StyleUtils';
 import themeColors from '../../styles/themes/default';
 
 const Modal = (props) => {
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        const closeOnOutsideClick = (event) => {
+            console.log('click', modalRef.current);
+
+            if (!props.isVisible || !modalRef.current || modalRef.current.contains(event.target) || !props.shouldCloseOnOutsideClick) {
+                return;
+            }
+
+            props.onClose();
+        };
+
+        document.addEventListener('mousedown', closeOnOutsideClick);
+
+        return () => {
+            document.removeEventListener('mousedown', closeOnOutsideClick);
+        };
+    }, [props]);
+
     const setStatusBarColor = (color = themeColors.appBG) => {
         if (!props.fullscreen) {
             return;
@@ -34,6 +54,7 @@ const Modal = (props) => {
             {...props}
             onModalHide={hideModal}
             onModalShow={showModal}
+            ref={modalRef}
         >
             {props.children}
         </BaseModal>

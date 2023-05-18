@@ -26,7 +26,10 @@ const propTypes = {
     shouldIncludeReportRecipientLocalTimeHeight: PropTypes.bool.isRequired,
 
     /** Whether the suggestions modal is visible or not */
-    visible: PropTypes.bool.isRequired,
+    isVisible: PropTypes.bool.isRequired,
+
+    /** Fired when the modal is closed */
+    onClose: PropTypes.func.isRequired,
 };
 
 const defaultProps = {};

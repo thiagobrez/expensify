@@ -247,8 +247,6 @@ class ReportActionCompose extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        console.log('this.state.suggestedEmojis', this.state.suggestedEmojis);
-
         const sidebarOpened = !prevProps.isDrawerOpen && this.props.isDrawerOpen;
         if (sidebarOpened) {
             ComposerActions.setShouldShowComposeInput(true);
@@ -258,7 +256,7 @@ class ReportActionCompose extends React.Component {
         // We avoid doing this on native platforms since the software keyboard popping
         // open creates a jarring and broken UX.
         if (this.willBlurTextInputOnTapOutside && this.props.isFocused && prevProps.modal.isVisible && !this.props.modal.isVisible) {
-            this.focus();
+            // this.focus();
         }
 
         if (this.props.isComposerFullSize !== prevProps.isComposerFullSize) {
@@ -283,12 +281,14 @@ class ReportActionCompose extends React.Component {
     }
 
     onSelectionChange(e) {
-        console.log('selectionchange');
+        const newSelection = e.nativeEvent.selection;
 
-        LayoutAnimation.configureNext(LayoutAnimation.create(50, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
-        this.setState({selection: e.nativeEvent.selection});
-        this.calculateEmojiSuggestion();
-        this.calculateMentionSuggestion();
+        if (this.state.selection.start !== newSelection.start || this.state.selection.end !== newSelection.end) {
+            LayoutAnimation.configureNext(LayoutAnimation.create(50, LayoutAnimation.Types.easeInEaseOut, LayoutAnimation.Properties.opacity));
+            this.setState({selection: newSelection});
+            this.calculateEmojiSuggestion();
+            this.calculateMentionSuggestion();
+        }
     }
 
     getDefaultSuggestionsValues() {
@@ -457,6 +457,7 @@ class ReportActionCompose extends React.Component {
      * Clean data related to EmojiSuggestions and MentionSuggestions
      */
     resetSuggestions() {
+        console.log('reset!!!');
         this.setState({
             ...this.getDefaultSuggestionsValues(),
         });
@@ -1034,10 +1035,14 @@ class ReportActionCompose extends React.Component {
                                                     this.props.isComposerFullSize ? styles.textInputFullCompose : styles.flex4,
                                                 ]}
                                                 maxLines={this.state.maxLines}
-                                                onFocus={() => this.setIsFocused(true)}
+                                                onFocus={() => {
+                                                    console.log('onFocus Composer');
+                                                    this.setIsFocused(true);
+                                                }}
                                                 onBlur={() => {
+                                                    console.log('onBlur Composer');
                                                     this.setIsFocused(false);
-                                                    this.resetSuggestions();
+                                                    // this.resetSuggestions();
                                                 }}
                                                 onClick={this.setShouldBlockEmojiCalcToFalse}
                                                 onPasteFile={displayFileInModal}
@@ -1121,58 +1126,36 @@ class ReportActionCompose extends React.Component {
                     </View>
                 </OfflineWithFeedback>
                 {this.state.isDraggingOver && <ReportDropUI />}
-
-                {/* <PopoverMenu */}
-                {/*     animationInTiming={CONST.ANIMATION_IN_TIMING} */}
-                {/*     isVisible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu} */}
-                {/*     onClose={() => {}} */}
-                {/*     onItemSelected={() => {}} */}
-                {/*     anchorPosition={styles.createMenuPositionReportActionCompose} */}
-                {/*     menuItems={[ */}
-                {/*         { */}
-                {/*             icon: Expensicons.Paperclip, */}
-                {/*             text: '😀', */}
-                {/*             onSelected: () => { */}
-                {/*                 this.insertSelectedEmoji(0); */}
-                {/*             }, */}
-                {/*         }, */}
-                {/*     ]} */}
-                {/* /> */}
-
-                {/* <Modal */}
-                {/*     type={CONST.MODAL.MODAL_TYPE.CENTERED} */}
-                {/*     isVisible */}
-                {/* > */}
-                {/*     <View style={{width: 200, height: 200, backgroundColor: 'darkred'}}> */}
-                {/*         <Text>Testing</Text> */}
-                {/*     </View> */}
-                {/* </Modal> */}
-
-                {!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu && (
-                    <ArrowKeyFocusManager
-                        focusedIndex={this.state.highlightedEmojiIndex}
-                        maxIndex={getMaxArrowIndex(this.state.suggestedEmojis.length, this.state.isAutoSuggestionPickerLarge)}
-                        shouldExcludeTextAreaNodes={false}
-                        onFocusedIndexChanged={(index) => this.setState({highlightedEmojiIndex: index})}
-                    >
-                        <EmojiSuggestions
-                            visible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu}
-                            onClose={() => this.setState({suggestedEmojis: []})}
-                            highlightedEmojiIndex={this.state.highlightedEmojiIndex}
-                            emojis={this.state.suggestedEmojis}
-                            comment={this.state.value}
-                            updateComment={(newComment) => this.setState({value: newComment})}
-                            colonIndex={this.state.colonIndex}
-                            prefix={this.state.value.slice(this.state.colonIndex + 1, this.state.selection.start)}
-                            onSelect={this.insertSelectedEmoji}
-                            isComposerFullSize={this.props.isComposerFullSize}
-                            preferredSkinToneIndex={this.props.preferredSkinTone}
-                            isEmojiPickerLarge={this.state.isAutoSuggestionPickerLarge}
-                            composerHeight={this.state.composerHeight}
-                            shouldIncludeReportRecipientLocalTimeHeight={shouldShowReportRecipientLocalTime}
-                        />
-                    </ArrowKeyFocusManager>
-                )}
+                <ArrowKeyFocusManager
+                    focusedIndex={this.state.highlightedEmojiIndex}
+                    maxIndex={getMaxArrowIndex(this.state.suggestedEmojis.length, this.state.isAutoSuggestionPickerLarge)}
+                    shouldExcludeTextAreaNodes={false}
+                    onFocusedIndexChanged={(index) => this.setState({highlightedEmojiIndex: index})}
+                >
+                    <EmojiSuggestions
+                        isVisible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu}
+                        onModalShow={() => {
+                            this.focus();
+                        }}
+                        onClose={() => {
+                            console.log('onClose Modal');
+                            // this.focus();
+                            this.setState({suggestedEmojis: []});
+                        }}
+                        highlightedEmojiIndex={this.state.highlightedEmojiIndex}
+                        emojis={this.state.suggestedEmojis}
+                        comment={this.state.value}
+                        updateComment={(newComment) => this.setState({value: newComment})}
+                        colonIndex={this.state.colonIndex}
+                        prefix={this.state.value.slice(this.state.colonIndex + 1, this.state.selection.start)}
+                        onSelect={this.insertSelectedEmoji}
+                        isComposerFullSize={this.props.isComposerFullSize}
+                        preferredSkinToneIndex={this.props.preferredSkinTone}
+                        isEmojiPickerLarge={this.state.isAutoSuggestionPickerLarge}
+                        composerHeight={this.state.composerHeight}
+                        shouldIncludeReportRecipientLocalTimeHeight={shouldShowReportRecipientLocalTime}
+                    />
+                </ArrowKeyFocusManager>
 
                 {/* {!_.isEmpty(this.state.suggestedMentions) && this.state.shouldShowMentionSuggestionMenu && ( */}
                 {/*     <ArrowKeyFocusManager */}
