@@ -5,7 +5,6 @@ import ReactNativeModal from 'react-native-modal';
 import {SafeAreaInsetsContext} from 'react-native-safe-area-context';
 import styles from '../../styles/styles';
 import * as StyleUtils from '../../styles/StyleUtils';
-import themeColors from '../../styles/themes/default';
 import {propTypes as modalPropTypes, defaultProps as modalDefaultProps} from './modalPropTypes';
 import * as Modal from '../../libs/actions/Modal';
 import getModalStyles from '../../styles/getModalStyles';
@@ -31,8 +30,6 @@ class BaseModal extends PureComponent {
     }
 
     componentDidMount() {
-        console.log('test');
-
         if (!this.props.isVisible) {
             return;
         }
@@ -126,8 +123,8 @@ class BaseModal extends PureComponent {
                 backdropColor={this.props.backdropColor}
                 backdropOpacity={hideBackdrop ? 0 : variables.overlayOpacity}
                 backdropTransitionOutTiming={0}
-                hasBackdrop={this.props.hasBackdrop}
-                coverScreen={this.props.coverScreen}
+                hasBackdrop={this.props.hasBackdrop || this.props.fullscreen}
+                coverScreen={this.props.fullscreen}
                 style={modalStyle}
                 // When `statusBarTranslucent` is true on Android, the modal fully covers the status bar.
                 // Since `windowHeight` doesn't include status bar height, it should be added in the `deviceHeight` calculation.

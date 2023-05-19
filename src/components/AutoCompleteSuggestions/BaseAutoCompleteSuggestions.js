@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Pressable} from 'react-native';
+import {Pressable} from 'react-native';
 
 // We take FlatList from this package to properly handle the scrolling of AutoCompleteSuggestions in chats since one scroll is nested inside another
 import {FlatList} from 'react-native-gesture-handler';
@@ -51,14 +51,11 @@ const BaseAutoCompleteSuggestions = (props) => {
         <Modal
             isVisible={props.isVisible}
             onClose={props.onClose}
-            onModalShow={props.onModalShow}
             type={CONST.MODAL.MODAL_TYPE.CENTERED_SMALL}
-            coverScreen={false}
+            fullscreen={false}
+            hasBackdrop
             backdropColor={themeColors.transparent}
-            shouldCloseOnOutsideClick={true}
-            // hasBackdrop={false}
-            // fullscreen={false}
-            // ref={props.forwardedRef}
+            shouldCloseOnOutsideClick
             innerContainerStyle={{
                 ...styles.autoCompleteSuggestionsContainer,
                 ...StyleUtils.getAutoCompleteSuggestionContainerStyle(rowHeight, props.shouldIncludeReportRecipientLocalTimeHeight),

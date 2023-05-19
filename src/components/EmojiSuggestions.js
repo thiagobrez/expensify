@@ -93,7 +93,6 @@ const EmojiSuggestions = (props) => {
 
     return (
         <AutoCompleteSuggestions
-            onModalShow={props.onModalShow}
             isVisible={props.isVisible}
             onClose={props.onClose}
             suggestions={props.emojis}

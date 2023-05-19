@@ -10,8 +10,6 @@ const Modal = (props) => {
 
     useEffect(() => {
         const closeOnOutsideClick = (event) => {
-            console.log('click', modalRef.current);
-
             if (!props.isVisible || !modalRef.current || modalRef.current.contains(event.target) || !props.shouldCloseOnOutsideClick) {
                 return;
             }

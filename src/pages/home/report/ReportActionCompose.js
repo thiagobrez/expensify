@@ -54,9 +54,6 @@ import * as Welcome from '../../../libs/actions/Welcome';
 import Permissions from '../../../libs/Permissions';
 import * as TaskUtils from '../../../libs/actions/Task';
 import * as OptionsListUtils from '../../../libs/OptionsListUtils';
-import Modal from '../../../components/Modal';
-import toggleTestToolsModal from '../../../libs/actions/TestTool';
-import Text from '../../../components/Text';
 
 const propTypes = {
     /** Beta features list */
@@ -255,9 +252,9 @@ class ReportActionCompose extends React.Component {
         // We want to focus or refocus the input when a modal has been closed and the underlying screen is focused.
         // We avoid doing this on native platforms since the software keyboard popping
         // open creates a jarring and broken UX.
-        if (this.willBlurTextInputOnTapOutside && this.props.isFocused && prevProps.modal.isVisible && !this.props.modal.isVisible) {
-            // this.focus();
-        }
+        // if (this.willBlurTextInputOnTapOutside && this.props.isFocused && prevProps.modal.isVisible && !this.props.modal.isVisible) {
+        //     this.focus();
+        // }
 
         if (this.props.isComposerFullSize !== prevProps.isComposerFullSize) {
             this.setMaxLines();
@@ -457,7 +454,6 @@ class ReportActionCompose extends React.Component {
      * Clean data related to EmojiSuggestions and MentionSuggestions
      */
     resetSuggestions() {
-        console.log('reset!!!');
         this.setState({
             ...this.getDefaultSuggestionsValues(),
         });
@@ -1035,23 +1031,12 @@ class ReportActionCompose extends React.Component {
                                                     this.props.isComposerFullSize ? styles.textInputFullCompose : styles.flex4,
                                                 ]}
                                                 maxLines={this.state.maxLines}
-                                                onFocus={() => {
-                                                    console.log('onFocus Composer');
-                                                    this.setIsFocused(true);
-                                                }}
-                                                onBlur={() => {
-                                                    console.log('onBlur Composer');
-                                                    this.setIsFocused(false);
-                                                    // this.resetSuggestions();
-                                                }}
+                                                onFocus={() => this.setIsFocused(true)}
+                                                onBlur={() => this.setIsFocused(false)}
                                                 onClick={this.setShouldBlockEmojiCalcToFalse}
                                                 onPasteFile={displayFileInModal}
                                                 shouldClear={this.state.textInputShouldClear}
-                                                onClear={() => {
-                                                    this.setTextInputShouldClear(false);
-                                                    // TODO: CASE 1
-                                                    // this.resetSuggestions();
-                                                }}
+                                                onClear={() => this.setTextInputShouldClear(false)}
                                                 isDisabled={isComposeDisabled || isBlockedFromConcierge || this.props.disabled}
                                                 selection={this.state.selection}
                                                 onSelectionChange={this.onSelectionChange}
@@ -1134,14 +1119,7 @@ class ReportActionCompose extends React.Component {
                 >
                     <EmojiSuggestions
                         isVisible={!_.isEmpty(this.state.suggestedEmojis) && this.state.shouldShowEmojiSuggestionMenu}
-                        onModalShow={() => {
-                            this.focus();
-                        }}
-                        onClose={() => {
-                            console.log('onClose Modal');
-                            // this.focus();
-                            this.setState({suggestedEmojis: []});
-                        }}
+                        onClose={() => this.setState({suggestedEmojis: []})}
                         highlightedEmojiIndex={this.state.highlightedEmojiIndex}
                         emojis={this.state.suggestedEmojis}
                         comment={this.state.value}
