@@ -51,13 +51,12 @@ const BaseAutoCompleteSuggestions = (props) => {
         <Modal
             isVisible={props.isVisible}
             onClose={props.onClose}
-            type={CONST.MODAL.MODAL_TYPE.CENTERED_SMALL}
+            type={CONST.MODAL.MODAL_TYPE.COMPOSER_SUGGESTIONS}
             fullscreen={false}
             hasBackdrop
             backdropColor={themeColors.transparent}
             shouldCloseOnOutsideClick
             innerContainerStyle={{
-                ...styles.autoCompleteSuggestionsContainer,
                 ...StyleUtils.getAutoCompleteSuggestionContainerStyle(rowHeight, props.shouldIncludeReportRecipientLocalTimeHeight),
             }}
         >

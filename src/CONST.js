@@ -609,6 +609,7 @@ const CONST = {
             BOTTOM_DOCKED: 'bottom_docked',
             POPOVER: 'popover',
             RIGHT_DOCKED: 'right_docked',
+            COMPOSER_SUGGESTIONS: 'composer_suggestions',
         },
         ANCHOR_ORIGIN_VERTICAL: {
             TOP: 'top',

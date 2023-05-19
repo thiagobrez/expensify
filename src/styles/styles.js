@@ -169,18 +169,6 @@ const styles = {
         flexBasis: '48%',
     },
 
-    autoCompleteSuggestionsContainer: {
-        backgroundColor: themeColors.appBG,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: themeColors.border,
-        justifyContent: 'center',
-        boxShadow: variables.popoverMenuShadow,
-        position: 'absolute',
-        left: 0,
-        right: 0,
-    },
-
     autoCompleteSuggestionContainer: {
         flexDirection: 'row',
         alignItems: 'center',

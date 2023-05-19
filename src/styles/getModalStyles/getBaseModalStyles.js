@@ -241,6 +241,43 @@ export default (type, windowDimensions, popoverAnchorPosition = {}, innerContain
             shouldAddBottomSafeAreaPadding = true;
             shouldAddTopSafeAreaPadding = true;
             break;
+        case CONST.MODAL.MODAL_TYPE.COMPOSER_SUGGESTIONS:
+            // A floating modal specifically for the Composer emoji and mention suggestions
+            modalStyle = {
+                ...modalStyle,
+                ...{
+                    alignItems: 'center',
+                },
+            };
+            modalContainerStyle = {
+                // Shadow Styles
+                shadowColor: themeColors.shadow,
+                shadowOffset: {
+                    width: 0,
+                    height: 0,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 5,
+                backgroundColor: themeColors.appBG,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: themeColors.border,
+                justifyContent: 'center',
+                boxShadow: variables.popoverMenuShadow,
+                position: 'absolute',
+                left: 0,
+                right: 0,
+            };
+
+            // Allow this modal to be dismissed with a swipe down or swipe right
+            swipeDirection = undefined;
+            animationIn = 'fadeIn';
+            animationOut = 'fadeOut';
+            shouldAddTopSafeAreaMargin = false;
+            shouldAddBottomSafeAreaMargin = false;
+            shouldAddTopSafeAreaPadding = false;
+            shouldAddBottomSafeAreaPadding = false;
+            break;
         default:
             modalStyle = {};
             modalContainerStyle = {};
