@@ -358,6 +358,10 @@ export default {
         paddingRight: 8,
     },
 
+    pr3: {
+        paddingRight: 12,
+    },
+
     pr4: {
         paddingRight: 16,
     },

@@ -67,6 +67,16 @@ const radioListItemPropTypes = {
 
         /** Whether this option is selected */
         isSelected: PropTypes.bool,
+
+        /** User accountID */
+        accountID: PropTypes.number,
+
+        /** Avatar for the user */
+        avatar: PropTypes.shape({
+            source: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+            name: PropTypes.string,
+            type: PropTypes.string,
+        }),
     }).isRequired,
 
     /** Whether this item is focused (for arrow key controls) */
@@ -144,6 +154,9 @@ const propTypes = {
 
     /** Callback to fire when the confirm button is pressed */
     onConfirm: PropTypes.func,
+
+    /** Whether to disable keyboard shortcuts such as arrow keys and Enter */
+    disableKeyboardShortcuts: PropTypes.bool,
 };
 
 export {propTypes, radioListItemPropTypes, checkboxListItemPropTypes};

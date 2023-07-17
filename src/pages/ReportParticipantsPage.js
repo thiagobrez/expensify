@@ -10,7 +10,6 @@ import ONYXKEYS from '../ONYXKEYS';
 import HeaderWithBackButton from '../components/HeaderWithBackButton';
 import Navigation from '../libs/Navigation/Navigation';
 import ScreenWrapper from '../components/ScreenWrapper';
-import OptionsList from '../components/OptionsList';
 import ROUTES from '../ROUTES';
 import personalDetailsPropType from './personalDetailsPropType';
 import withLocalize, {withLocalizePropTypes} from '../components/withLocalize';
@@ -21,6 +20,7 @@ import withReportOrNotFound from './home/report/withReportOrNotFound';
 import FullPageNotFoundView from '../components/BlockingViews/FullPageNotFoundView';
 import CONST from '../CONST';
 import * as UserUtils from '../libs/UserUtils';
+import SelectionList from '../components/SelectionList';
 
 const propTypes = {
     /* Onyx Props */
@@ -62,25 +62,19 @@ const getAllParticipants = (report, personalDetails) => {
             const userLogin = Str.removeSMSDomain(userPersonalDetail.login || '') || 'Hidden';
 
             return {
-                alternateText: userLogin,
-                displayName: userPersonalDetail.displayName,
-                accountID: userPersonalDetail.accountID,
-                icons: [
-                    {
-                        id: accountID,
-                        source: UserUtils.getAvatar(userPersonalDetail.avatar, accountID),
-                        name: userLogin,
-                        type: CONST.ICON_TYPE_AVATAR,
-                    },
-                ],
-                keyForList: `${index}-${userLogin}`,
-                login: userLogin,
                 text: userPersonalDetail.displayName,
-                tooltipText: userLogin,
-                participantsList: [{accountID, displayName: userPersonalDetail.displayName}],
+                alternateText: userLogin,
+                keyForList: `${index}-${userLogin}`,
+                accountID,
+                avatar: {
+                    id: accountID,
+                    source: UserUtils.getAvatar(userPersonalDetail.avatar, accountID),
+                    name: userLogin,
+                    type: CONST.ICON_TYPE_AVATAR,
+                },
             };
         })
-        .sortBy((participant) => participant.displayName.toLowerCase())
+        .sortBy((participant) => participant.text.toLowerCase())
         .value();
 };
 
@@ -89,43 +83,25 @@ function ReportParticipantsPage(props) {
 
     return (
         <ScreenWrapper includeSafeAreaPaddingBottom={false}>
-            {({safeAreaPaddingBottomStyle}) => (
-                <FullPageNotFoundView shouldShow={_.isEmpty(props.report)}>
-                    <HeaderWithBackButton
-                        title={props.translate(
-                            ReportUtils.isChatRoom(props.report) || ReportUtils.isPolicyExpenseChat(props.report) || ReportUtils.isChatThread(props.report)
-                                ? 'common.members'
-                                : 'common.details',
-                        )}
-                    />
-                    <View
-                        pointerEvents="box-none"
-                        style={[styles.containerWithSpaceBetween]}
-                    >
-                        {Boolean(participants.length) && (
-                            <OptionsList
-                                sections={[
-                                    {
-                                        title: '',
-                                        data: participants,
-                                        shouldShow: true,
-                                        indexOffset: 0,
-                                    },
-                                ]}
-                                onSelectRow={(option) => {
-                                    Navigation.navigate(ROUTES.getProfileRoute(option.accountID));
-                                }}
-                                hideSectionHeaders
-                                showTitleTooltip
-                                disableFocusOptions
-                                boldStyle
-                                optionHoveredStyle={styles.hoveredComponentBG}
-                                contentContainerStyles={[safeAreaPaddingBottomStyle]}
-                            />
-                        )}
-                    </View>
-                </FullPageNotFoundView>
-            )}
+            <FullPageNotFoundView shouldShow={_.isEmpty(props.report)}>
+                <HeaderWithBackButton
+                    title={props.translate(
+                        ReportUtils.isChatRoom(props.report) || ReportUtils.isPolicyExpenseChat(props.report) || ReportUtils.isChatThread(props.report) ? 'common.members' : 'common.details',
+                    )}
+                />
+                <View
+                    pointerEvents="box-none"
+                    style={[styles.containerWithSpaceBetween]}
+                >
+                    {Boolean(participants.length) && (
+                        <SelectionList
+                            disableKeyboardShortcuts
+                            sections={[{data: participants, indexOffset: 0}]}
+                            onSelectRow={(option) => Navigation.navigate(ROUTES.getProfileRoute(option.accountID))}
+                        />
+                    )}
+                </View>
+            </FullPageNotFoundView>
         </ScreenWrapper>
     );
 }

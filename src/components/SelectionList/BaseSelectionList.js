@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {View} from 'react-native';
 import _ from 'underscore';
 import lodashGet from 'lodash/get';
@@ -6,7 +6,6 @@ import SectionList from '../SectionList';
 import Text from '../Text';
 import styles from '../../styles/styles';
 import TextInput from '../TextInput';
-import ArrowKeyFocusManager from '../ArrowKeyFocusManager';
 import CONST from '../../CONST';
 import variables from '../../styles/variables';
 import {propTypes as selectionListPropTypes} from './selectionListPropTypes';
@@ -21,6 +20,7 @@ import FixedFooter from '../FixedFooter';
 import Button from '../Button';
 import useLocalize from '../../hooks/useLocalize';
 import Log from '../../libs/Log';
+import useArrowKeyFocusManager from '../../hooks/useArrowKeyFocusManager';
 
 const propTypes = {
     ...keyboardStatePropTypes,
@@ -47,6 +47,7 @@ function BaseSelectionList({
     confirmButtonText = '',
     onConfirm,
     isKeyboardShown = false,
+    disableKeyboardShortcuts = false,
 }) {
     const {translate} = useLocalize();
     const listRef = useRef(null);
@@ -130,18 +131,6 @@ function BaseSelectionList({
 
     const flattenedSections = getFlattenedSections();
 
-    const [focusedIndex, setFocusedIndex] = useState(() => {
-        const defaultIndex = 0;
-
-        const indexOfInitiallyFocusedOption = _.findIndex(flattenedSections.allOptions, (option) => option.keyForList === initiallyFocusedOptionKey);
-
-        if (indexOfInitiallyFocusedOption >= 0) {
-            return indexOfInitiallyFocusedOption;
-        }
-
-        return defaultIndex;
-    });
-
     /**
      * Scrolls to the desired item index in the section list
      *
@@ -170,6 +159,14 @@ function BaseSelectionList({
 
         listRef.current.scrollToLocation({sectionIndex: adjustedSectionIndex, itemIndex, animated});
     };
+
+    const [focusedIndex] = useArrowKeyFocusManager({
+        maxIndex: flattenedSections.allOptions.length - 1,
+        onFocusedIndexChange: (newFocusedIndex) => scrollToIndex(newFocusedIndex, true),
+        initialFocusedIndex: _.findIndex(flattenedSections.allOptions, (option) => option.keyForList === initiallyFocusedOptionKey),
+        disabledIndexes: flattenedSections.disabledOptionsIndexes,
+        isActive: !disableKeyboardShortcuts,
+    });
 
     /**
      * This function is used to compute the layout of any given item in our list.
@@ -267,99 +264,90 @@ function BaseSelectionList({
             onSelectRow(focusedOption);
         },
         {
+            isActive: !disableKeyboardShortcuts,
             captureOnInputs: true,
             shouldBubble: () => !flattenedSections.allOptions[focusedIndex],
         },
     );
 
     return (
-        <ArrowKeyFocusManager
-            disabledIndexes={flattenedSections.disabledOptionsIndexes}
-            focusedIndex={focusedIndex}
-            maxIndex={flattenedSections.allOptions.length - 1}
-            onFocusedIndexChanged={(newFocusedIndex) => {
-                setFocusedIndex(newFocusedIndex);
-                scrollToIndex(newFocusedIndex, true);
-            }}
-        >
-            <SafeAreaConsumer>
-                {({safeAreaPaddingBottomStyle}) => (
-                    <View style={[styles.flex1, !isKeyboardShown && safeAreaPaddingBottomStyle]}>
-                        {shouldShowTextInput && (
-                            <View style={[styles.ph5, styles.pv5]}>
-                                <TextInput
-                                    ref={textInputRef}
-                                    label={textInputLabel}
-                                    accessibilityLabel={textInputLabel}
-                                    accessibilityRole={CONST.ACCESSIBILITY_ROLE.TEXT}
-                                    value={textInputValue}
-                                    placeholder={textInputPlaceholder}
-                                    maxLength={textInputMaxLength}
-                                    onChangeText={onChangeText}
-                                    keyboardType={keyboardType}
-                                    selectTextOnFocus
-                                />
-                            </View>
-                        )}
-                        {Boolean(headerMessage) && (
-                            <View style={[styles.ph5, styles.pb5]}>
-                                <Text style={[styles.textLabel, styles.colorMuted]}>{headerMessage}</Text>
-                            </View>
-                        )}
-                        {!headerMessage && canSelectMultiple && shouldShowSelectAll && (
-                            <PressableWithFeedback
-                                style={[styles.peopleRow, styles.userSelectNone, styles.ph5, styles.pb3]}
-                                onPress={onSelectAll}
+        <SafeAreaConsumer>
+            {({safeAreaPaddingBottomStyle}) => (
+                <View style={[styles.flex1, !isKeyboardShown && safeAreaPaddingBottomStyle]}>
+                    {shouldShowTextInput && (
+                        <View style={[styles.ph5, styles.pv5]}>
+                            <TextInput
+                                ref={textInputRef}
+                                label={textInputLabel}
+                                accessibilityLabel={textInputLabel}
+                                accessibilityRole={CONST.ACCESSIBILITY_ROLE.TEXT}
+                                value={textInputValue}
+                                placeholder={textInputPlaceholder}
+                                maxLength={textInputMaxLength}
+                                onChangeText={onChangeText}
+                                keyboardType={keyboardType}
+                                selectTextOnFocus
+                            />
+                        </View>
+                    )}
+                    {Boolean(headerMessage) && (
+                        <View style={[styles.ph5, styles.pb5]}>
+                            <Text style={[styles.textLabel, styles.colorMuted]}>{headerMessage}</Text>
+                        </View>
+                    )}
+                    {!headerMessage && canSelectMultiple && shouldShowSelectAll && (
+                        <PressableWithFeedback
+                            style={[styles.peopleRow, styles.userSelectNone, styles.ph5, styles.pb3]}
+                            onPress={onSelectAll}
+                            accessibilityLabel={translate('workspace.people.selectAll')}
+                            accessibilityRole="button"
+                            accessibilityState={{checked: flattenedSections.allSelected}}
+                        >
+                            <Checkbox
                                 accessibilityLabel={translate('workspace.people.selectAll')}
-                                accessibilityRole="button"
-                                accessibilityState={{checked: flattenedSections.allSelected}}
-                            >
-                                <Checkbox
-                                    accessibilityLabel={translate('workspace.people.selectAll')}
-                                    isChecked={flattenedSections.allSelected}
-                                    onPress={onSelectAll}
-                                />
-                                <View style={[styles.flex1]}>
-                                    <Text style={[styles.textStrong, styles.ph5]}>{translate('workspace.people.selectAll')}</Text>
-                                </View>
-                            </PressableWithFeedback>
-                        )}
-                        <SectionList
-                            ref={listRef}
-                            sections={sections}
-                            renderSectionHeader={renderSectionHeader}
-                            renderItem={renderItem}
-                            getItemLayout={getItemLayout}
-                            onScroll={onScroll}
-                            onScrollBeginDrag={onScrollBeginDrag}
-                            keyExtractor={(item) => item.keyForList}
-                            onLayout={() => scrollToIndex(focusedIndex, false)}
-                            extraData={focusedIndex}
-                            indicatorStyle="white"
-                            keyboardShouldPersistTaps="always"
-                            showsVerticalScrollIndicator={false}
-                            initialNumToRender={12}
-                            maxToRenderPerBatch={5}
-                            windowSize={5}
-                            viewabilityConfig={{viewAreaCoveragePercentThreshold: 95}}
-                            testID="selection-list"
-                        />
-                        {shouldShowConfirmButton && (
-                            <FixedFooter>
-                                <Button
-                                    success
-                                    style={[styles.w100]}
-                                    text={confirmButtonText || translate('common.confirm')}
-                                    onPress={onConfirm}
-                                    pressOnEnter
-                                    enterKeyEventListenerPriority={1}
-                                />
-                            </FixedFooter>
-                        )}
-                    </View>
-                )}
-            </SafeAreaConsumer>
-        </ArrowKeyFocusManager>
+                                isChecked={flattenedSections.allSelected}
+                                onPress={onSelectAll}
+                            />
+                            <View style={[styles.flex1]}>
+                                <Text style={[styles.textStrong, styles.ph5]}>{translate('workspace.people.selectAll')}</Text>
+                            </View>
+                        </PressableWithFeedback>
+                    )}
+                    <SectionList
+                        ref={listRef}
+                        sections={sections}
+                        renderSectionHeader={renderSectionHeader}
+                        renderItem={renderItem}
+                        getItemLayout={getItemLayout}
+                        onScroll={onScroll}
+                        onScrollBeginDrag={onScrollBeginDrag}
+                        keyExtractor={(item) => item.keyForList}
+                        onLayout={() => scrollToIndex(focusedIndex, false)}
+                        extraData={focusedIndex}
+                        indicatorStyle="white"
+                        keyboardShouldPersistTaps="always"
+                        showsVerticalScrollIndicator={false}
+                        initialNumToRender={12}
+                        maxToRenderPerBatch={5}
+                        windowSize={5}
+                        viewabilityConfig={{viewAreaCoveragePercentThreshold: 95}}
+                        testID="selection-list"
+                    />
+                    {shouldShowConfirmButton && (
+                        <FixedFooter>
+                            <Button
+                                success
+                                style={[styles.w100]}
+                                text={confirmButtonText || translate('common.confirm')}
+                                onPress={onConfirm}
+                                pressOnEnter
+                                enterKeyEventListenerPriority={1}
+                            />
+                        </FixedFooter>
+                    )}
+                </View>
+            )}
+        </SafeAreaConsumer>
     );
 }
 

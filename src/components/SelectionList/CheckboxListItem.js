@@ -39,7 +39,7 @@ function CheckboxListItem({item, isFocused = false, onSelectRow, onDismissError 
                     onPress={() => onSelectRow(item)}
                     style={item.isDisabled ? styles.buttonOpacityDisabled : {}}
                 />
-                {item.avatar && (
+                {Boolean(item.avatar) && (
                     <Avatar
                         containerStyles={styles.pl5}
                         source={item.avatar.source}
