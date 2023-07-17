@@ -18,6 +18,7 @@ import * as Browser from '../libs/Browser';
 import compose from '../libs/compose';
 import personalDetailsPropType from './personalDetailsPropType';
 import reportPropTypes from './reportPropTypes';
+import SelectionList from '../components/SelectionList';
 
 const propTypes = {
     /** Whether screen is used to create group chat */
@@ -130,12 +131,16 @@ function NewChatPage(props) {
             newSelectedOptions = [...selectedOptions, option];
         }
 
+        // TODO: Added formatted variables here, but group chat is using the same logic. Need to check if we can refactor group also.
         const {recentReports, personalDetails, userToInvite} = OptionsListUtils.getNewChatOptions(props.reports, props.personalDetails, props.betas, searchTerm, [], excludedGroupEmails);
+        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
+        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
+        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
 
         setSelectedOptions(newSelectedOptions);
-        setFilteredRecentReports(recentReports);
-        setFilteredPersonalDetails(personalDetails);
-        setFilteredUserToInvite(userToInvite);
+        setFilteredRecentReports(formattedRecentReports);
+        setFilteredPersonalDetails(formattedPersonalDetails);
+        setFilteredUserToInvite(formattedUserToInvite);
     }
 
     /**
@@ -172,9 +177,15 @@ function NewChatPage(props) {
             [],
             props.isGroupChat ? excludedGroupEmails : [],
         );
-        setFilteredRecentReports(recentReports);
-        setFilteredPersonalDetails(personalDetails);
-        setFilteredUserToInvite(userToInvite);
+
+        // TODO: Added formatted variables here, but group chat is using the same logic. Need to check if we can refactor group also.
+        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
+        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
+        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+
+        setFilteredRecentReports(formattedRecentReports);
+        setFilteredPersonalDetails(formattedPersonalDetails);
+        setFilteredUserToInvite(formattedUserToInvite);
         // props.betas and props.isGroupChat are not added as dependencies since they don't change during the component lifecycle
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.reports, props.personalDetails, searchTerm]);
@@ -187,25 +198,56 @@ function NewChatPage(props) {
             {({didScreenTransitionEnd, safeAreaPaddingBottomStyle}) => (
                 <>
                     <HeaderWithBackButton title={props.isGroupChat ? props.translate('sidebarScreen.newGroup') : props.translate('sidebarScreen.newChat')} />
-                    <View style={[styles.flex1, styles.w100, styles.pRelative, selectedOptions.length > 0 ? safeAreaPaddingBottomStyle : {}]}>
-                        <OptionsSelector
-                            canSelectMultipleOptions={props.isGroupChat}
-                            sections={sections}
-                            selectedOptions={selectedOptions}
-                            value={searchTerm}
-                            onSelectRow={(option) => (props.isGroupChat ? toggleOption(option) : createChat(option))}
-                            onChangeText={setSearchTerm}
-                            headerMessage={headerMessage}
-                            boldStyle
-                            shouldFocusOnSelectRow={props.isGroupChat && !Browser.isMobile()}
-                            shouldShowConfirmButton={props.isGroupChat}
-                            shouldShowOptions={didScreenTransitionEnd && isOptionsDataReady}
-                            confirmButtonText={props.translate('newChatPage.createGroup')}
-                            onConfirmSelection={createGroup}
-                            textInputLabel={props.translate('optionsSelector.nameEmailOrPhoneNumber')}
-                            safeAreaPaddingBottomStyle={safeAreaPaddingBottomStyle}
-                        />
-                    </View>
+                    {props.isGroupChat ? (
+                        <View style={[styles.flex1, styles.w100, styles.pRelative, selectedOptions.length > 0 ? safeAreaPaddingBottomStyle : {}]}>
+                            <OptionsSelector
+                                canSelectMultipleOptions={props.isGroupChat}
+                                sections={sections}
+                                selectedOptions={selectedOptions}
+                                value={searchTerm}
+                                onSelectRow={(option) => (props.isGroupChat ? toggleOption(option) : createChat(option))}
+                                onChangeText={setSearchTerm}
+                                headerMessage={headerMessage}
+                                boldStyle
+                                shouldFocusOnSelectRow={props.isGroupChat && !Browser.isMobile()}
+                                shouldShowConfirmButton={props.isGroupChat}
+                                shouldShowOptions={didScreenTransitionEnd && isOptionsDataReady}
+                                confirmButtonText={props.translate('newChatPage.createGroup')}
+                                onConfirmSelection={createGroup}
+                                textInputLabel={props.translate('optionsSelector.nameEmailOrPhoneNumber')}
+                                safeAreaPaddingBottomStyle={safeAreaPaddingBottomStyle}
+                            />
+                        </View>
+                    ) : (
+                        <View style={[styles.flex1, styles.w100, styles.pRelative]}>
+                            <SelectionList
+                                sections={sections}
+                                textInputLabel={props.translate('optionsSelector.nameEmailOrPhoneNumber')}
+                                textInputValue={searchTerm}
+                                onChangeText={setSearchTerm}
+                                onSelectRow={(item) => createChat(item)}
+                                headerMessage={headerMessage}
+                            />
+
+                            {/* <OptionsSelector */}
+                            {/*     canSelectMultipleOptions={props.isGroupChat} */}
+                            {/*     sections={sections} */}
+                            {/*     selectedOptions={selectedOptions} */}
+                            {/*     value={searchTerm} */}
+                            {/*     onSelectRow={(option) => (props.isGroupChat ? toggleOption(option) : createChat(option))} */}
+                            {/*     onChangeText={setSearchTerm} */}
+                            {/*     headerMessage={headerMessage} */}
+                            {/*     boldStyle */}
+                            {/*     shouldFocusOnSelectRow={props.isGroupChat && !Browser.isMobile()} */}
+                            {/*     shouldShowConfirmButton={props.isGroupChat} */}
+                            {/*     shouldShowOptions={didScreenTransitionEnd && isOptionsDataReady} */}
+                            {/*     confirmButtonText={props.translate('newChatPage.createGroup')} */}
+                            {/*     onConfirmSelection={createGroup} */}
+                            {/*     textInputLabel={props.translate('optionsSelector.nameEmailOrPhoneNumber')} */}
+                            {/*     safeAreaPaddingBottomStyle={safeAreaPaddingBottomStyle} */}
+                            {/* /> */}
+                        </View>
+                    )}
                 </>
             )}
         </ScreenWrapper>
