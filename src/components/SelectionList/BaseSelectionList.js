@@ -50,6 +50,7 @@ function BaseSelectionList({
     disableKeyboardShortcuts = false,
 }) {
     const {translate} = useLocalize();
+    const firstLayoutRef = useRef(true);
     const listRef = useRef(null);
     const textInputRef = useRef(null);
     const focusTimeoutRef = useRef(null);
@@ -322,7 +323,6 @@ function BaseSelectionList({
                         onScroll={onScroll}
                         onScrollBeginDrag={onScrollBeginDrag}
                         keyExtractor={(item) => item.keyForList}
-                        onLayout={() => scrollToIndex(focusedIndex, false)}
                         extraData={focusedIndex}
                         indicatorStyle="white"
                         keyboardShouldPersistTaps="always"
@@ -332,6 +332,13 @@ function BaseSelectionList({
                         windowSize={5}
                         viewabilityConfig={{viewAreaCoveragePercentThreshold: 95}}
                         testID="selection-list"
+                        onLayout={() => {
+                            if (!firstLayoutRef.current) {
+                                return;
+                            }
+                            scrollToIndex(focusedIndex, false);
+                            firstLayoutRef.current = false;
+                        }}
                     />
                     {shouldShowConfirmButton && (
                         <FixedFooter>
