@@ -49,15 +49,17 @@ const excludedGroupEmails = _.without(CONST.EXPENSIFY_EMAILS, CONST.EMAIL.CONCIE
 
 function NewChatPage(props) {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredRecentReports, setFilteredRecentReports] = useState([]);
-    const [filteredPersonalDetails, setFilteredPersonalDetails] = useState([]);
-    const [filteredUserToInvite, setFilteredUserToInvite] = useState();
     const [selectedOptions, setSelectedOptions] = useState([]);
+    const [filteredOptions, setFilteredOptions] = useState({
+        recentReports: [],
+        personalDetails: [],
+        userToInvite: undefined,
+    });
 
     const maxParticipantsReached = selectedOptions.length === CONST.REPORT.MAXIMUM_PARTICIPANTS;
     const headerMessage = OptionsListUtils.getHeaderMessage(
-        filteredPersonalDetails.length + filteredRecentReports.length !== 0,
-        Boolean(filteredUserToInvite),
+        filteredOptions.personalDetails.length + filteredOptions.recentReports.length !== 0,
+        Boolean(filteredOptions.userToInvite),
         searchTerm,
         maxParticipantsReached,
     );
@@ -83,9 +85,9 @@ function NewChatPage(props) {
 
         // Filtering out selected users from the search results
         const filterText = _.reduce(selectedOptions, (str, {login}) => `${str} ${login}`, '');
-        const recentReportsWithoutSelected = _.filter(filteredRecentReports, ({login}) => !filterText.includes(login));
-        const personalDetailsWithoutSelected = _.filter(filteredPersonalDetails, ({login}) => !filterText.includes(login));
-        const hasUnselectedUserToInvite = filteredUserToInvite && !filterText.includes(filteredUserToInvite.login);
+        const recentReportsWithoutSelected = _.filter(filteredOptions.recentReports, ({login}) => !filterText.includes(login));
+        const personalDetailsWithoutSelected = _.filter(filteredOptions.personalDetails, ({login}) => !filterText.includes(login));
+        const hasUnselectedUserToInvite = filteredOptions.userToInvite && !filterText.includes(filteredOptions.userToInvite.login);
 
         sectionsList.push({
             title: props.translate('common.recents'),
@@ -106,7 +108,7 @@ function NewChatPage(props) {
         if (hasUnselectedUserToInvite) {
             sectionsList.push({
                 title: undefined,
-                data: [filteredUserToInvite],
+                data: [filteredOptions.userToInvite],
                 shouldShow: true,
                 indexOffset,
             });
@@ -114,7 +116,7 @@ function NewChatPage(props) {
 
         return sectionsList;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filteredPersonalDetails, filteredRecentReports, filteredUserToInvite, maxParticipantsReached, props.isGroupChat, selectedOptions]);
+    }, [filteredOptions.personalDetails, filteredOptions.recentReports, filteredOptions.userToInvite, maxParticipantsReached, props.isGroupChat, selectedOptions]);
 
     /**
      * Removes a selected option from list if already selected. If not already selected add this option to the list.
@@ -131,16 +133,27 @@ function NewChatPage(props) {
             newSelectedOptions = [...selectedOptions, option];
         }
 
-        // TODO: Added formatted variables here, but group chat is using the same logic. Need to check if we can refactor group also.
         const {recentReports, personalDetails, userToInvite} = OptionsListUtils.getNewChatOptions(props.reports, props.personalDetails, props.betas, searchTerm, [], excludedGroupEmails);
-        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+
+        if (props.isGroupChat) {
+            setFilteredOptions({
+                recentReports,
+                personalDetails,
+                userToInvite,
+            });
+        } else {
+            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
+            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
+            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+
+            setFilteredOptions({
+                recentReports: formattedRecentReports,
+                personalDetails: formattedPersonalDetails,
+                userToInvite: formattedUserToInvite,
+            });
+        }
 
         setSelectedOptions(newSelectedOptions);
-        setFilteredRecentReports(formattedRecentReports);
-        setFilteredPersonalDetails(formattedPersonalDetails);
-        setFilteredUserToInvite(formattedUserToInvite);
     }
 
     /**
@@ -178,14 +191,24 @@ function NewChatPage(props) {
             props.isGroupChat ? excludedGroupEmails : [],
         );
 
-        // TODO: Added formatted variables here, but group chat is using the same logic. Need to check if we can refactor group also.
-        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+        if (props.isGroupChat) {
+            setFilteredOptions({
+                recentReports,
+                personalDetails,
+                userToInvite,
+            });
+        } else {
+            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
+            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
+            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
 
-        setFilteredRecentReports(formattedRecentReports);
-        setFilteredPersonalDetails(formattedPersonalDetails);
-        setFilteredUserToInvite(formattedUserToInvite);
+            setFilteredOptions({
+                recentReports: formattedRecentReports,
+                personalDetails: formattedPersonalDetails,
+                userToInvite: formattedUserToInvite,
+            });
+        }
+
         // props.betas and props.isGroupChat are not added as dependencies since they don't change during the component lifecycle
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.reports, props.personalDetails, searchTerm]);
@@ -228,24 +251,6 @@ function NewChatPage(props) {
                                 onSelectRow={(item) => createChat(item)}
                                 headerMessage={headerMessage}
                             />
-
-                            {/* <OptionsSelector */}
-                            {/*     canSelectMultipleOptions={props.isGroupChat} */}
-                            {/*     sections={sections} */}
-                            {/*     selectedOptions={selectedOptions} */}
-                            {/*     value={searchTerm} */}
-                            {/*     onSelectRow={(option) => (props.isGroupChat ? toggleOption(option) : createChat(option))} */}
-                            {/*     onChangeText={setSearchTerm} */}
-                            {/*     headerMessage={headerMessage} */}
-                            {/*     boldStyle */}
-                            {/*     shouldFocusOnSelectRow={props.isGroupChat && !Browser.isMobile()} */}
-                            {/*     shouldShowConfirmButton={props.isGroupChat} */}
-                            {/*     shouldShowOptions={didScreenTransitionEnd && isOptionsDataReady} */}
-                            {/*     confirmButtonText={props.translate('newChatPage.createGroup')} */}
-                            {/*     onConfirmSelection={createGroup} */}
-                            {/*     textInputLabel={props.translate('optionsSelector.nameEmailOrPhoneNumber')} */}
-                            {/*     safeAreaPaddingBottomStyle={safeAreaPaddingBottomStyle} */}
-                            {/* /> */}
                         </View>
                     )}
                 </>
