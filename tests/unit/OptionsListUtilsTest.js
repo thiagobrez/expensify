@@ -522,6 +522,14 @@ describe('OptionsListUtils', () => {
         expect(results.userToInvite).not.toBe(null);
         expect(results.userToInvite.login).toBe('+18003243233');
 
+        // When we use a search term for contact number that contains alphabet characters
+        results = OptionsListUtils.getNewChatOptions(REPORTS, PERSONAL_DETAILS, [], '998243aaaa');
+
+        // Then we shouldn't have any results or user to invite
+        expect(results.recentReports.length).toBe(0);
+        expect(results.personalDetails.length).toBe(0);
+        expect(results.userToInvite).toBe(null);
+
         // Test Concierge's existence in new group options
         results = OptionsListUtils.getNewChatOptions(REPORTS_WITH_CONCIERGE, PERSONAL_DETAILS_WITH_CONCIERGE);
 
@@ -620,5 +628,29 @@ describe('OptionsListUtils', () => {
         // Then one personal should be in personalDetails list
         expect(results.personalDetails.length).toBe(1);
         expect(results.personalDetails[0].text).toBe('Spider-Man');
+    });
+
+    it('formatMemberForList()', () => {
+        const formattedMembers = _.map(PERSONAL_DETAILS, (personalDetail, key) => OptionsListUtils.formatMemberForList(personalDetail, key === '1'));
+
+        // We're only formatting items inside the array, so the order should be the same as the original PERSONAL_DETAILS array
+        expect(formattedMembers[0].text).toBe('Mister Fantastic');
+        expect(formattedMembers[1].text).toBe('Iron Man');
+        expect(formattedMembers[2].text).toBe('Spider-Man');
+
+        // We should expect only the first item to be selected
+        expect(formattedMembers[0].isSelected).toBe(true);
+
+        // And all the others to be unselected
+        expect(_.every(formattedMembers.slice(1), (personalDetail) => !personalDetail.isSelected)).toBe(true);
+
+        // `isDisabled` is always false
+        expect(_.every(formattedMembers, (personalDetail) => !personalDetail.isDisabled)).toBe(true);
+
+        // `isAdmin` is always false
+        expect(_.every(formattedMembers, (personalDetail) => !personalDetail.isAdmin)).toBe(true);
+
+        // The PERSONAL_DETAILS list doesn't specify `participantsList[n].avatar`, so the default one should be used
+        expect(_.every(formattedMembers, (personalDetail) => Boolean(personalDetail.avatar.source))).toBe(true);
     });
 });
