@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {View} from 'react-native';
 import _ from 'underscore';
 import lodashGet from 'lodash/get';
@@ -138,7 +138,7 @@ function BaseSelectionList({
      * @param {Number} index - the index of the item to scroll to
      * @param {Boolean} animated - whether to animate the scroll
      */
-    const scrollToIndex = (index, animated) => {
+    const scrollToIndex = useCallback((index, animated = true) => {
         const item = flattenedSections.allOptions[index];
 
         if (!listRef.current || !item) {
@@ -159,12 +159,19 @@ function BaseSelectionList({
         }
 
         listRef.current.scrollToLocation({sectionIndex: adjustedSectionIndex, itemIndex, animated});
-    };
+
+        // If this function changes, it causes `useArrowKeyFocusManager` to fire `onFocusedIndexChange`,
+        // making the list scroll back to the focused index when the keyboard disappears. If we don't disable
+        // dependencies here, we would need to make sure that the `sections` is stable in every usage of this component.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const [focusedIndex] = useArrowKeyFocusManager({
         maxIndex: flattenedSections.allOptions.length - 1,
-        onFocusedIndexChange: (newFocusedIndex) => scrollToIndex(newFocusedIndex, true),
-        initialFocusedIndex: _.findIndex(flattenedSections.allOptions, (option) => option.keyForList === initiallyFocusedOptionKey),
+        onFocusedIndexChange: scrollToIndex,
+        initialFocusedIndex: initiallyFocusedOptionKey
+            ? _.findIndex(flattenedSections.allOptions, (option) => option.keyForList === initiallyFocusedOptionKey)
+            : _.findIndex(flattenedSections.allOptions, (option) => option.isSelected),
         disabledIndexes: flattenedSections.disabledOptionsIndexes,
         isActive: !disableKeyboardShortcuts,
     });
@@ -187,6 +194,14 @@ function BaseSelectionList({
      */
     const getItemLayout = (data, flatDataArrayIndex) => {
         const targetItem = flattenedSections.itemLayouts[flatDataArrayIndex];
+
+        if (!targetItem) {
+            return {
+                length: 0,
+                offset: 0,
+                index: flatDataArrayIndex,
+            };
+        }
 
         return {
             length: targetItem.length,
@@ -331,14 +346,8 @@ function BaseSelectionList({
                         maxToRenderPerBatch={5}
                         windowSize={5}
                         viewabilityConfig={{viewAreaCoveragePercentThreshold: 95}}
+                        initialScrollIndex={focusedIndex}
                         testID="selection-list"
-                        onLayout={() => {
-                            if (!firstLayoutRef.current) {
-                                return;
-                            }
-                            scrollToIndex(focusedIndex, false);
-                            firstLayoutRef.current = false;
-                        }}
                     />
                     {shouldShowConfirmButton && (
                         <FixedFooter>
