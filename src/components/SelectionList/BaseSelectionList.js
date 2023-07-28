@@ -48,9 +48,9 @@ function BaseSelectionList({
     onConfirm,
     isKeyboardShown = false,
     disableKeyboardShortcuts = false,
+    children,
 }) {
     const {translate} = useLocalize();
-    const firstLayoutRef = useRef(true);
     const listRef = useRef(null);
     const textInputRef = useRef(null);
     const focusTimeoutRef = useRef(null);
@@ -348,9 +348,11 @@ function BaseSelectionList({
                         viewabilityConfig={{viewAreaCoveragePercentThreshold: 95}}
                         initialScrollIndex={focusedIndex}
                         testID="selection-list"
+                        style={[styles.flexGrow0]}
                     />
+                    {children}
                     {shouldShowConfirmButton && (
-                        <FixedFooter>
+                        <FixedFooter style={[styles.mtAuto]}>
                             <Button
                                 success
                                 style={[styles.w100]}

@@ -20,6 +20,7 @@ import MenuItemWithTopDescription from './MenuItemWithTopDescription';
 import Navigation from '../libs/Navigation/Navigation';
 import optionPropTypes from './optionPropTypes';
 import * as CurrencyUtils from '../libs/CurrencyUtils';
+import SelectionList from './SelectionList';
 
 const propTypes = {
     /** Callback to inform parent modal of success */
@@ -273,22 +274,18 @@ function MoneyRequestConfirmationList(props) {
         );
     }, [confirm, props.selectedParticipants, props.bankAccountRoute, props.iouCurrencyCode, props.iouType, props.isReadOnly, props.policyID, selectedParticipants, splitOrRequestOptions]);
 
+    // TODO: REVIEW SECTIONS BUILDING
+
     return (
-        <OptionsSelector
+        <SelectionList
+            canSelectMultiple={canModifyParticipants}
             sections={optionSelectorSections}
-            value=""
             onSelectRow={canModifyParticipants ? selectParticipant : navigateToUserDetail}
-            onConfirmSelection={confirm}
-            selectedOptions={selectedOptions}
-            canSelectMultipleOptions={canModifyParticipants}
-            disableArrowKeysActions={!canModifyParticipants}
-            boldStyle
-            showTitleTooltip
-            shouldTextInputAppearBelowOptions
-            shouldShowTextInput={false}
-            shouldUseStyleForChildren={false}
-            optionHoveredStyle={canModifyParticipants ? styles.hoveredComponentBG : {}}
-            footerContent={footerContent}
+            onConfirm={confirm}
+            confirmButtonText={translate(props.hasMultipleParticipants ? 'iou.splitAmount' : 'iou.requestAmount', {
+                amount: CurrencyUtils.convertToDisplayString(props.iouAmount, props.iouCurrencyCode),
+            })}
+            disableKeyboardShortcuts={!canModifyParticipants}
         >
             <MenuItemWithTopDescription
                 shouldShowRightIcon={!props.isReadOnly}
@@ -307,8 +304,45 @@ function MoneyRequestConfirmationList(props) {
                 style={[styles.moneyRequestMenuItem, styles.mb2]}
                 disabled={didConfirm || props.isReadOnly}
             />
-        </OptionsSelector>
+        </SelectionList>
     );
+
+    // return (
+    //     <OptionsSelector
+    //         sections={optionSelectorSections}
+    //         value=""
+    //         onSelectRow={canModifyParticipants ? selectParticipant : navigateToUserDetail}
+    //         onConfirmSelection={confirm}
+    //         selectedOptions={selectedOptions}
+    //         canSelectMultipleOptions={canModifyParticipants}
+    //         disableArrowKeysActions={!canModifyParticipants}
+    //         boldStyle
+    //         showTitleTooltip
+    //         shouldTextInputAppearBelowOptions
+    //         shouldShowTextInput={false}
+    //         shouldUseStyleForChildren={false}
+    //         optionHoveredStyle={canModifyParticipants ? styles.hoveredComponentBG : {}}
+    //         footerContent={footerContent}
+    //     >
+    //         <MenuItemWithTopDescription
+    //             shouldShowRightIcon={!props.isReadOnly}
+    //             title={formattedAmount}
+    //             description={translate('iou.amount')}
+    //             onPress={() => Navigation.navigate(ROUTES.getMoneyRequestAmountRoute(props.iouType, props.reportID))}
+    //             style={[styles.moneyRequestMenuItem, styles.mt2]}
+    //             titleStyle={styles.moneyRequestConfirmationAmount}
+    //             disabled={didConfirm || props.isReadOnly}
+    //         />
+    //         <MenuItemWithTopDescription
+    //             shouldShowRightIcon={!props.isReadOnly}
+    //             title={props.iouComment}
+    //             description={translate('common.description')}
+    //             onPress={() => Navigation.navigate(ROUTES.getMoneyRequestDescriptionRoute(props.iouType, props.reportID))}
+    //             style={[styles.moneyRequestMenuItem, styles.mb2]}
+    //             disabled={didConfirm || props.isReadOnly}
+    //         />
+    //     </OptionsSelector>
+    // );
 }
 
 MoneyRequestConfirmationList.propTypes = propTypes;
