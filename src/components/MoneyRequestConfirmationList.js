@@ -1,10 +1,9 @@
-import React, {useState, useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import PropTypes from 'prop-types';
 import {withOnyx} from 'react-native-onyx';
 import _ from 'underscore';
 import styles from '../styles/styles';
 import * as OptionsListUtils from '../libs/OptionsListUtils';
-import OptionsSelector from './OptionsSelector';
 import ONYXKEYS from '../ONYXKEYS';
 import withLocalize, {withLocalizePropTypes} from './withLocalize';
 import withWindowDimensions, {windowDimensionsPropTypes} from './withWindowDimensions';
@@ -14,7 +13,7 @@ import ButtonWithDropdownMenu from './ButtonWithDropdownMenu';
 import Log from '../libs/Log';
 import SettlementButton from './SettlementButton';
 import ROUTES from '../ROUTES';
-import withCurrentUserPersonalDetails, {withCurrentUserPersonalDetailsPropTypes, withCurrentUserPersonalDetailsDefaultProps} from './withCurrentUserPersonalDetails';
+import withCurrentUserPersonalDetails, {withCurrentUserPersonalDetailsDefaultProps, withCurrentUserPersonalDetailsPropTypes} from './withCurrentUserPersonalDetails';
 import * as IOUUtils from '../libs/IOUUtils';
 import MenuItemWithTopDescription from './MenuItemWithTopDescription';
 import Navigation from '../libs/Navigation/Navigation';
@@ -112,7 +111,9 @@ function MoneyRequestConfirmationList(props) {
     const getParticipantsWithAmount = useCallback(
         (participantsList) => {
             const iouAmount = IOUUtils.calculateAmount(participantsList.length, props.iouAmount);
-            return OptionsListUtils.getIOUConfirmationOptionsFromParticipants(participantsList, CurrencyUtils.convertToDisplayString(iouAmount, props.iouCurrencyCode));
+            return _.map(participantsList, (participant) =>
+                OptionsListUtils.formatMemberForList(participant, {descriptiveText: CurrencyUtils.convertToDisplayString(iouAmount, props.iouCurrencyCode)}),
+            );
         },
         [props.iouAmount, props.iouCurrencyCode],
     );
@@ -144,10 +145,11 @@ function MoneyRequestConfirmationList(props) {
             const formattedParticipantsList = _.union(formattedSelectedParticipants, unselectedParticipants);
 
             const myIOUAmount = IOUUtils.calculateAmount(selectedParticipants.length, props.iouAmount, true);
-            const formattedPayeeOption = OptionsListUtils.getIOUConfirmationOptionsFromPayeePersonalDetail(
+            const payeeOption = OptionsListUtils.getIOUConfirmationOptionsFromPayeePersonalDetail(
                 payeePersonalDetails,
                 CurrencyUtils.convertToDisplayString(myIOUAmount, props.iouCurrencyCode),
             );
+            const formattedPayeeOption = OptionsListUtils.formatMemberForList(payeeOption);
 
             sections.push(
                 {
@@ -167,7 +169,7 @@ function MoneyRequestConfirmationList(props) {
         } else {
             sections.push({
                 title: translate('common.to'),
-                data: props.selectedParticipants,
+                data: [OptionsListUtils.formatMemberForList(props.selectedParticipants[0])],
                 shouldShow: true,
                 indexOffset: 0,
             });
@@ -273,8 +275,6 @@ function MoneyRequestConfirmationList(props) {
             />
         );
     }, [confirm, props.selectedParticipants, props.bankAccountRoute, props.iouCurrencyCode, props.iouType, props.isReadOnly, props.policyID, selectedParticipants, splitOrRequestOptions]);
-
-    // TODO: REVIEW SECTIONS BUILDING
 
     return (
         <SelectionList

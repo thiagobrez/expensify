@@ -32,24 +32,38 @@ function RadioListItem({item, isFocused = false, onSelectRow}) {
                 )}
 
                 <View style={[styles.flex1, styles.alignItemsStart]}>
-                    <Text style={[styles.optionDisplayName, isFocused ? styles.sidebarLinkActiveText : styles.sidebarLinkText, hasBoldText && styles.sidebarLinkTextBold]}>{item.text}</Text>
+                    <Text
+                        style={[styles.optionDisplayName, isFocused ? styles.sidebarLinkActiveText : styles.sidebarLinkText, hasBoldText && styles.sidebarLinkTextBold]}
+                        numberOfLines={1}
+                    >
+                        {item.text}
+                    </Text>
 
                     {Boolean(item.alternateText) && (
-                        <Text style={[isFocused ? styles.sidebarLinkActiveText : styles.sidebarLinkText, styles.optionAlternateText, styles.textLabelSupporting]}>{item.alternateText}</Text>
+                        <Text
+                            style={[isFocused ? styles.sidebarLinkActiveText : styles.sidebarLinkText, styles.optionAlternateText, styles.textLabelSupporting]}
+                            numberOfLines={1}
+                        >
+                            {item.alternateText}
+                        </Text>
                     )}
                 </View>
 
+                {item.descriptiveText && (
+                    <View style={[styles.flexRow, styles.alignItemsCenter, styles.pl2]}>
+                        <Text style={styles.textLabel}>{item.descriptiveText}</Text>
+                    </View>
+                )}
+
                 {item.isSelected && (
                     <View
-                        style={[styles.flexRow, styles.alignItemsCenter]}
+                        style={[styles.flexRow, styles.alignItemsCenter, styles.pl2]}
                         accessible={false}
                     >
-                        <View>
-                            <Icon
-                                src={Expensicons.Checkmark}
-                                fill={themeColors.success}
-                            />
-                        </View>
+                        <Icon
+                            src={Expensicons.Checkmark}
+                            fill={themeColors.success}
+                        />
                     </View>
                 )}
             </View>

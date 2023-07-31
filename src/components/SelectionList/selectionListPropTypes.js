@@ -59,8 +59,11 @@ const radioListItemPropTypes = {
         /** Text to display */
         text: PropTypes.string.isRequired,
 
-        /** Alternate text to display */
+        /** Alternate text to display in the second row */
         alternateText: PropTypes.string,
+
+        /** Descriptive text to display to the side */
+        descriptiveText: PropTypes.string,
 
         /** Key used internally by React */
         keyForList: PropTypes.string.isRequired,

@@ -142,9 +142,9 @@ function NewChatPage(props) {
                 userToInvite,
             });
         } else {
-            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report));
+            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail));
+            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite);
 
             setFilteredOptions({
                 recentReports: formattedRecentReports,
@@ -198,9 +198,9 @@ function NewChatPage(props) {
                 userToInvite,
             });
         } else {
-            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+            const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report));
+            const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail));
+            const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite);
 
             setFilteredOptions({
                 recentReports: formattedRecentReports,

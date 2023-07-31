@@ -48,9 +48,9 @@ class MoneyRequestParticipantsSelector extends Component {
 
         const {recentReports, personalDetails, userToInvite} = this.getRequestOptions();
 
-        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report));
+        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail));
+        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite);
 
         this.state = {
             recentReports: formattedRecentReports,
@@ -126,9 +126,9 @@ class MoneyRequestParticipantsSelector extends Component {
     updateOptionsWithSearchTerm(searchTerm = '') {
         const {recentReports, personalDetails, userToInvite} = this.getRequestOptions(searchTerm);
 
-        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report, false));
-        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail, false));
-        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite, false);
+        const formattedRecentReports = _.map(recentReports, (report) => OptionsListUtils.formatMemberForList(report));
+        const formattedPersonalDetails = _.map(personalDetails, (personalDetail) => OptionsListUtils.formatMemberForList(personalDetail));
+        const formattedUserToInvite = OptionsListUtils.formatMemberForList(userToInvite);
 
         this.setState({
             recentReports: formattedRecentReports,
