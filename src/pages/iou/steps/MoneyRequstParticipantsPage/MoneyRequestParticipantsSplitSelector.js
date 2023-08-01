@@ -14,6 +14,8 @@ import compose from '../../../../libs/compose';
 import personalDetailsPropType from '../../../personalDetailsPropType';
 import * as Browser from '../../../../libs/Browser';
 import reportPropTypes from '../../../reportPropTypes';
+import SelectionList from '../../../../components/SelectionList';
+import {getPersonalDetailsForAccountIDs} from '../../../../libs/OptionsListUtils';
 
 const propTypes = {
     /** Beta features list */
@@ -65,6 +67,11 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
     });
 
     const maxParticipantsReached = participants.length === CONST.REPORT.MAXIMUM_PARTICIPANTS;
+
+    console.log('participants', participants);
+    console.log('personalDetails', personalDetails);
+
+    console.log('xxx', getPersonalDetailsForAccountIDs(_.pluck(participants, 'accountID'), personalDetails));
 
     /**
      * Returns the sections needed for the OptionsSelector
@@ -155,13 +162,33 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
 
     useEffect(() => {
         const chatOptions = OptionsListUtils.getNewChatOptions(reports, personalDetails, betas, searchTerm, participants, CONST.EXPENSIFY_EMAILS);
+
+        const formattedRecentReports = _.map(chatOptions.recentReports, OptionsListUtils.formatMemberForList);
+        const formattedPersonalDetails = _.map(chatOptions.personalDetails, OptionsListUtils.formatMemberForList);
+        const formattedUserToInvite = OptionsListUtils.formatMemberForList(chatOptions.userToInvite);
+
         setNewChatOptions({
-            recentReports: chatOptions.recentReports,
-            personalDetails: chatOptions.personalDetails,
-            userToInvite: chatOptions.userToInvite,
+            recentReports: formattedRecentReports,
+            personalDetails: formattedPersonalDetails,
+            userToInvite: formattedUserToInvite,
         });
     }, [betas, reports, participants, personalDetails, translate, searchTerm, setNewChatOptions]);
 
+    return (
+        <SelectionList
+            canSelectMultiple
+            sections={sections}
+            textInputValue={searchTerm}
+            textInputLabel={translate('optionsSelector.nameEmailOrPhoneNumber')}
+            onChangeText={setSearchTerm}
+            onSelectRow={toggleOption}
+            headerMessage={headerMessage}
+            confirmText={translate('common.next')}
+            onConfirm={onStepComplete}
+        />
+    );
+
+    // TODO: REMOVE
     return (
         <View style={[styles.flex1, styles.w100, participants.length > 0 ? safeAreaPaddingBottomStyle : {}]}>
             <OptionsSelector
