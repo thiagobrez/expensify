@@ -232,7 +232,7 @@ function WorkspaceMembersPage(props) {
      */
     const dismissError = useCallback(
         (item) => {
-            if (item.pendingAction === 'delete') {
+            if (item.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE) {
                 Policy.clearDeleteMemberError(props.route.params.policyID, item.accountID);
             } else {
                 Policy.clearAddMemberError(props.route.params.policyID, item.accountID);
@@ -247,13 +247,13 @@ function WorkspaceMembersPage(props) {
      * @param {Object} policyMember
      * @returns {Boolean}
      */
-    const isDeletedPolicyMember = (policyMember) => !props.network.isOffline && policyMember.pendingAction === 'delete' && _.isEmpty(policyMember.errors);
+    const isDeletedPolicyMember = (policyMember) => !props.network.isOffline && policyMember.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE && _.isEmpty(policyMember.errors);
     const policyOwner = lodashGet(props.policy, 'owner');
     const currentUserLogin = lodashGet(props.currentUserPersonalDetails, 'login');
     const policyID = lodashGet(props.route, 'params.policyID');
     const policyName = lodashGet(props.policy, 'name');
 
-    const getListData = () => {
+    const getMemberOptions = () => {
         let result = [];
 
         _.each(props.policyMembers, (policyMember, accountID) => {
@@ -307,7 +307,7 @@ function WorkspaceMembersPage(props) {
                 isDisabled: accountID === props.session.accountID || details.login === props.policy.owner || policyMember.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
                 text: props.formatPhoneNumber(details.displayName),
                 alternateText: props.formatPhoneNumber(details.login),
-                isAdmin: props.session.email === details.login || policyMember.role === 'admin',
+                isAdmin: props.session.email === details.login || policyMember.role === CONST.POLICY.ROLE.ADMIN,
                 avatar: {
                     source: UserUtils.getAvatar(details.avatar, accountID),
                     name: details.login,
@@ -323,7 +323,7 @@ function WorkspaceMembersPage(props) {
         return result;
     };
 
-    const data = getListData();
+    const data = getMemberOptions();
     const headerMessage = searchValue.trim() && !data.length ? props.translate('workspace.common.memberNotFound') : '';
 
     return (

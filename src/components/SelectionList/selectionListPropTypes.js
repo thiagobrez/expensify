@@ -31,7 +31,7 @@ const checkboxListItemPropTypes = {
 
         /** Avatar for the user */
         avatar: PropTypes.shape({
-            source: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+            source: PropTypes.oneOfType([PropTypes.string, PropTypes.func]).isRequired,
             name: PropTypes.string,
             type: PropTypes.string,
         }),
@@ -157,6 +157,9 @@ const propTypes = {
 
     /** Callback to fire when the confirm button is pressed */
     onConfirm: PropTypes.func,
+
+    /** Whether to show the vertical scroll indicator */
+    showScrollIndicator: PropTypes.bool,
 
     /** Whether to disable keyboard shortcuts such as arrow keys and Enter */
     disableKeyboardShortcuts: PropTypes.bool,

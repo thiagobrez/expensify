@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {View} from 'react-native';
 import _ from 'underscore';
 import lodashGet from 'lodash/get';
@@ -46,6 +46,7 @@ function BaseSelectionList({
     headerMessage = '',
     confirmButtonText = '',
     onConfirm,
+    showScrollIndicator = false,
     isKeyboardShown = false,
     disableKeyboardShortcuts = false,
     children,
@@ -67,7 +68,7 @@ function BaseSelectionList({
      *
      * @return {{itemLayouts: [{offset: number, length: number}], disabledOptionsIndexes: *[], allOptions: *[]}}
      */
-    const getFlattenedSections = () => {
+    const flattenedSections = useMemo(() => {
         const allOptions = [];
 
         const disabledOptionsIndexes = [];
@@ -76,7 +77,7 @@ function BaseSelectionList({
         let offset = 0;
         const itemLayouts = [{length: 0, offset}];
 
-        let selectedCount = 0;
+        const selectedOptions = [];
 
         _.each(sections, (section, sectionIndex) => {
             const sectionHeaderHeight = variables.optionsListSectionHeaderHeight;
@@ -103,7 +104,7 @@ function BaseSelectionList({
                 offset += fullItemHeight;
 
                 if (item.isSelected) {
-                    selectedCount++;
+                    selectedOptions.push(item);
                 }
             });
 
@@ -116,7 +117,7 @@ function BaseSelectionList({
         // because React Native accounts for it in getItemLayout
         itemLayouts.push({length: 0, offset});
 
-        if (selectedCount > 1 && !canSelectMultiple) {
+        if (selectedOptions.length > 1 && !canSelectMultiple) {
             Log.alert(
                 'Dev error: SelectionList - multiple items are selected but prop `canSelectMultiple` is false. Please enable `canSelectMultiple` or make your list have only 1 item with `isSelected: true`.',
             );
@@ -124,13 +125,12 @@ function BaseSelectionList({
 
         return {
             allOptions,
+            selectedOptions,
             disabledOptionsIndexes,
             itemLayouts,
-            allSelected: selectedCount > 0 && selectedCount === allOptions.length - disabledOptionsIndexes.length,
+            allSelected: selectedOptions.length > 0 && selectedOptions.length === allOptions.length - disabledOptionsIndexes.length,
         };
-    };
-
-    const flattenedSections = getFlattenedSections();
+    }, [canSelectMultiple, sections]);
 
     /**
      * Scrolls to the desired item index in the section list
@@ -166,7 +166,7 @@ function BaseSelectionList({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const [focusedIndex] = useArrowKeyFocusManager({
+    const [focusedIndex, setFocusedIndex] = useArrowKeyFocusManager({
         maxIndex: flattenedSections.allOptions.length - 1,
         onFocusedIndexChange: scrollToIndex,
         initialFocusedIndex: initiallyFocusedOptionKey
@@ -175,6 +175,23 @@ function BaseSelectionList({
         disabledIndexes: flattenedSections.disabledOptionsIndexes,
         isActive: !disableKeyboardShortcuts,
     });
+
+    const selectRow = (item, index) => {
+        // In single-selection lists we don't care about updating the focused index, because the list is closed after selecting an item
+        if (canSelectMultiple) {
+            if (sections.length === 1) {
+                // If the list has only 1 section (e.g. Workspace Members list), we always focus the next available item
+                const nextAvailableIndex = _.findIndex(flattenedSections.allOptions, (option, i) => i > index && !option.isDisabled);
+                setFocusedIndex(nextAvailableIndex);
+            } else {
+                // If the list has multiple sections (e.g. Workspace Invite list), we focus the first one after all the selected (selected items are always at the top)
+                const selectedOptionsCount = item.isSelected ? flattenedSections.selectedOptions.length - 1 : flattenedSections.selectedOptions.length + 1;
+                setFocusedIndex(selectedOptionsCount);
+            }
+        }
+
+        onSelectRow(item);
+    };
 
     /**
      * This function is used to compute the layout of any given item in our list.
@@ -234,7 +251,7 @@ function BaseSelectionList({
                 <CheckboxListItem
                     item={item}
                     isFocused={isFocused}
-                    onSelectRow={onSelectRow}
+                    onSelectRow={() => selectRow(item, index)}
                     onDismissError={onDismissError}
                 />
             );
@@ -244,7 +261,7 @@ function BaseSelectionList({
             <RadioListItem
                 item={item}
                 isFocused={isFocused}
-                onSelectRow={onSelectRow}
+                onSelectRow={() => selectRow(item, index)}
             />
         );
     };
@@ -273,11 +290,11 @@ function BaseSelectionList({
         () => {
             const focusedOption = flattenedSections.allOptions[focusedIndex];
 
-            if (!focusedOption) {
+            if (!focusedOption || focusedOption.isDisabled) {
                 return;
             }
 
-            onSelectRow(focusedOption);
+            selectRow(focusedOption, focusedIndex);
         },
         {
             isActive: !disableKeyboardShortcuts,
@@ -303,6 +320,7 @@ function BaseSelectionList({
                                 onChangeText={onChangeText}
                                 keyboardType={keyboardType}
                                 selectTextOnFocus
+                                spellCheck={false}
                             />
                         </View>
                     )}
@@ -341,7 +359,7 @@ function BaseSelectionList({
                         extraData={focusedIndex}
                         indicatorStyle="white"
                         keyboardShouldPersistTaps="always"
-                        showsVerticalScrollIndicator={false}
+                        showsVerticalScrollIndicator={showScrollIndicator}
                         initialNumToRender={12}
                         maxToRenderPerBatch={5}
                         windowSize={5}

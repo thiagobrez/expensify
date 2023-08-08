@@ -67,6 +67,7 @@ const getAllParticipants = (report, personalDetails, translate) => {
                 alternateText: userLogin,
                 keyForList: `${index}-${userLogin}`,
                 accountID,
+                isDisabled: ReportUtils.isOptimisticPersonalDetail(accountID),
                 avatar: {
                     id: accountID,
                     source: UserUtils.getAvatar(userPersonalDetail.avatar, accountID),
@@ -84,7 +85,7 @@ function ReportParticipantsPage(props) {
 
     return (
         <ScreenWrapper includeSafeAreaPaddingBottom={false}>
-            <FullPageNotFoundView shouldShow={_.isEmpty(props.report)}>
+            <FullPageNotFoundView shouldShow={_.isEmpty(props.report) || ReportUtils.isArchivedRoom(props.report)}>
                 <HeaderWithBackButton
                     title={props.translate(
                         ReportUtils.isChatRoom(props.report) || ReportUtils.isPolicyExpenseChat(props.report) || ReportUtils.isChatThread(props.report) ? 'common.members' : 'common.details',
@@ -99,6 +100,7 @@ function ReportParticipantsPage(props) {
                             disableKeyboardShortcuts
                             sections={[{data: participants, indexOffset: 0}]}
                             onSelectRow={(option) => Navigation.navigate(ROUTES.getProfileRoute(option.accountID))}
+                            showScrollIndicator
                         />
                     )}
                 </View>

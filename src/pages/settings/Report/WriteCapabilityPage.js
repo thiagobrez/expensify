@@ -37,7 +37,7 @@ function WriteCapabilityPage(props) {
         isSelected: value === (props.report.writeCapability || CONST.REPORT.WRITE_CAPABILITIES.ALL),
     }));
 
-    const isAbleToEdit = !ReportUtils.isAdminRoom(props.report) && PolicyUtils.isPolicyAdmin(props.policy);
+    const isAbleToEdit = !ReportUtils.isAdminRoom(props.report) && PolicyUtils.isPolicyAdmin(props.policy) && !ReportUtils.isArchivedRoom(props.report);
 
     return (
         <ScreenWrapper includeSafeAreaPaddingBottom={false}>

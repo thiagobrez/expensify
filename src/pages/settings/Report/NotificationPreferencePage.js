@@ -19,7 +19,7 @@ const propTypes = {
 
 function NotificationPreferencePage(props) {
     const {translate} = useLocalize();
-    const shouldDisableNotificationPreferences = ReportUtils.shouldDisableSettings(props.report);
+    const shouldDisableNotificationPreferences = ReportUtils.shouldDisableSettings(props.report) || ReportUtils.isArchivedRoom(props.report);
     const notificationPreferenceOptions = _.map(translate('notificationPreferencesPage.notificationPreferences'), (preference, key) => ({
         text: preference,
         keyForList: key,
