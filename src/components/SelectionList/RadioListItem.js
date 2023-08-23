@@ -9,12 +9,12 @@ import themeColors from '../../styles/themes/default';
 import {radioListItemPropTypes} from './selectionListPropTypes';
 import Avatar from '../Avatar';
 
-function RadioListItem({item, isFocused = false, onSelectRow}) {
+function RadioListItem({item, isFocused = false, isDisabled = false, onSelectRow}) {
     const hasBoldText = item.isSelected || Boolean(item.alternateText);
-
     return (
         <PressableWithFeedback
             onPress={() => onSelectRow(item)}
+            disabled={isDisabled}
             accessibilityLabel={item.text}
             accessibilityRole="button"
             hoverDimmingValue={1}

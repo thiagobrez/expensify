@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import _ from 'underscore';
 import lodashGet from 'lodash/get';
 import {View} from 'react-native';
@@ -18,23 +18,23 @@ import ROUTES from '../../ROUTES';
 import ConfirmModal from '../../components/ConfirmModal';
 import personalDetailsPropType from '../personalDetailsPropType';
 import withWindowDimensions, {windowDimensionsPropTypes} from '../../components/withWindowDimensions';
-import {policyPropTypes, policyDefaultProps} from './withPolicy';
-import withPolicyAndFullscreenLoading from './withPolicyAndFullscreenLoading';
+import withPolicy, {policyDefaultProps, policyPropTypes} from './withPolicy';
 import CONST from '../../CONST';
 import {withNetwork} from '../../components/OnyxProvider';
 import FullPageNotFoundView from '../../components/BlockingViews/FullPageNotFoundView';
 import networkPropTypes from '../../components/networkPropTypes';
 import * as UserUtils from '../../libs/UserUtils';
-import withCurrentUserPersonalDetails, {withCurrentUserPersonalDetailsPropTypes, withCurrentUserPersonalDetailsDefaultProps} from '../../components/withCurrentUserPersonalDetails';
+import withCurrentUserPersonalDetails, {withCurrentUserPersonalDetailsDefaultProps, withCurrentUserPersonalDetailsPropTypes} from '../../components/withCurrentUserPersonalDetails';
 import * as PolicyUtils from '../../libs/PolicyUtils';
 import usePrevious from '../../hooks/usePrevious';
 import Log from '../../libs/Log';
 import * as PersonalDetailsUtils from '../../libs/PersonalDetailsUtils';
 import SelectionList from '../../components/SelectionList';
+import Text from '../../components/Text';
 
 const propTypes = {
     /** All personal details asssociated with user */
-    personalDetails: personalDetailsPropType,
+    personalDetails: PropTypes.objectOf(personalDetailsPropType),
 
     /** URL Route params */
     route: PropTypes.shape({
@@ -51,6 +51,7 @@ const propTypes = {
         accountID: PropTypes.number,
     }),
 
+    isLoadingReportData: PropTypes.bool,
     ...policyPropTypes,
     ...withLocalizePropTypes,
     ...windowDimensionsPropTypes,
@@ -63,6 +64,7 @@ const defaultProps = {
     session: {
         accountID: 0,
     },
+    isLoadingReportData: true,
     ...policyDefaultProps,
     ...withCurrentUserPersonalDetailsDefaultProps,
 };
@@ -86,7 +88,7 @@ function WorkspaceMembersPage(props) {
      */
     const validateSelection = useCallback(() => {
         const newErrors = {};
-        const ownerAccountID = _.first(PersonalDetailsUtils.getAccountIDsByLogins([props.policy.owner]));
+        const ownerAccountID = _.first(PersonalDetailsUtils.getAccountIDsByLogins(props.policy.owner ? [props.policy.owner] : []));
         _.each(selectedEmployees, (member) => {
             if (member !== ownerAccountID && member !== props.session.accountID) {
                 return;
@@ -301,13 +303,19 @@ function WorkspaceMembersPage(props) {
                 }
             }
 
+            const isAdmin = props.session.email === details.login || policyMember.role === CONST.POLICY.ROLE.ADMIN;
+
             result.push({
                 keyForList: accountID,
                 isSelected: _.contains(selectedEmployees, Number(accountID)),
                 isDisabled: accountID === props.session.accountID || details.login === props.policy.owner || policyMember.pendingAction === CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
                 text: props.formatPhoneNumber(details.displayName),
                 alternateText: props.formatPhoneNumber(details.login),
-                isAdmin: props.session.email === details.login || policyMember.role === CONST.POLICY.ROLE.ADMIN,
+                rightElement: isAdmin ? (
+                    <View style={[styles.badge, styles.peopleBadge]}>
+                        <Text style={styles.peopleBadgeText}>{props.translate('common.admin')}</Text>
+                    </View>
+                ) : null,
                 avatar: {
                     source: UserUtils.getAvatar(details.avatar, accountID),
                     name: details.login,
@@ -332,7 +340,7 @@ function WorkspaceMembersPage(props) {
             style={[styles.defaultModalContainer]}
         >
             <FullPageNotFoundView
-                shouldShow={_.isEmpty(props.policy)}
+                shouldShow={(_.isEmpty(props.policy) || !PolicyUtils.isPolicyAdmin(props.policy)) && !props.isLoadingReportData}
                 subtitleKey={_.isEmpty(props.policy) ? undefined : 'workspace.common.notAuthorized'}
                 onBackButtonPress={() => Navigation.goBack(ROUTES.SETTINGS_WORKSPACES)}
             >
@@ -384,6 +392,7 @@ function WorkspaceMembersPage(props) {
                             onSelectRow={(item) => toggleUser(item.keyForList)}
                             onSelectAll={() => toggleAllUsers(data)}
                             onDismissError={dismissError}
+                            showLoadingPlaceholder={!OptionsListUtils.isPersonalDetailsReady(props.personalDetails) || _.isEmpty(props.policyMembers)}
                             initiallyFocusedOptionKey={lodashGet(
                                 _.find(data, (item) => !item.isDisabled),
                                 'keyForList',
@@ -404,7 +413,7 @@ WorkspaceMembersPage.displayName = 'WorkspaceMembersPage';
 export default compose(
     withLocalize,
     withWindowDimensions,
-    withPolicyAndFullscreenLoading,
+    withPolicy,
     withNetwork(),
     withOnyx({
         personalDetails: {
@@ -412,6 +421,9 @@ export default compose(
         },
         session: {
             key: ONYXKEYS.SESSION,
+        },
+        isLoadingReportData: {
+            key: ONYXKEYS.IS_LOADING_REPORT_DATA,
         },
     }),
     withCurrentUserPersonalDetails,

@@ -26,8 +26,8 @@ const checkboxListItemPropTypes = {
         /** User login */
         login: PropTypes.string,
 
-        /** Whether this user is an admin */
-        isAdmin: PropTypes.bool,
+        /** Element to show on the right side of the item */
+        rightElement: PropTypes.element,
 
         /** Avatar for the user */
         avatar: PropTypes.shape({
@@ -84,6 +84,9 @@ const radioListItemPropTypes = {
 
     /** Whether this item is focused (for arrow key controls) */
     isFocused: PropTypes.bool,
+
+    /** Whether this item is disabled */
+    isDisabled: PropTypes.bool,
 
     /** Callback to fire when the item is pressed */
     onSelectRow: PropTypes.func.isRequired,
@@ -163,6 +166,9 @@ const propTypes = {
 
     /** Whether to disable keyboard shortcuts such as arrow keys and Enter */
     disableKeyboardShortcuts: PropTypes.bool,
+
+    /** Whether to show the loading placeholder */
+    showLoadingPlaceholder: PropTypes.bool,
 };
 
 export {propTypes, radioListItemPropTypes, checkboxListItemPropTypes};
