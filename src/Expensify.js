@@ -47,6 +47,9 @@ Onyx.registerLogger(({level, message}) => {
     }
 });
 
+// TODO: REMOVE
+Log.info = () => {};
+
 const propTypes = {
     /* Onyx Props */
 

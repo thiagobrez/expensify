@@ -907,32 +907,6 @@ function getSearchOptions(reports, personalDetails, searchValue = '', betas) {
 }
 
 /**
- * Build the IOUConfirmation options for showing the payee personalDetail
- *
- * @param {Object} personalDetail
- * @param {String} amountText
- * @returns {Object}
- */
-function getIOUConfirmationOptionsFromPayeePersonalDetail(personalDetail, amountText) {
-    const formattedLogin = LocalePhoneNumber.formatPhoneNumber(personalDetail.login);
-    return {
-        text: personalDetail.displayName || formattedLogin,
-        alternateText: formattedLogin || personalDetail.displayName,
-        icons: [
-            {
-                source: UserUtils.getAvatar(personalDetail.avatar, personalDetail.accountID),
-                name: personalDetail.login,
-                type: CONST.ICON_TYPE_AVATAR,
-                id: personalDetail.accountID,
-            },
-        ],
-        descriptiveText: amountText,
-        login: personalDetail.login,
-        accountID: personalDetail.accountID,
-    };
-}
-
-/**
  * Build the options for the New Group view
  *
  * @param {Object} reports
@@ -1117,7 +1091,6 @@ export {
     getMemberInviteOptions,
     getHeaderMessage,
     getPersonalDetailsForAccountIDs,
-    getIOUConfirmationOptionsFromPayeePersonalDetail,
     getSearchText,
     getAllReportErrors,
     getPolicyExpenseReportOptions,

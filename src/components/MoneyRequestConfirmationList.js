@@ -27,6 +27,7 @@ import themeColors from '../styles/themes/default';
 import Image from './Image';
 import useLocalize from '../hooks/useLocalize';
 import * as ReceiptUtils from '../libs/ReceiptUtils';
+import * as LocalePhoneNumber from '../libs/LocalePhoneNumber';
 
 const propTypes = {
     /** Callback to inform parent modal of success */
@@ -131,6 +132,7 @@ function MoneyRequestConfirmationList(props) {
     const getParticipantsWithAmount = useCallback(
         (participantsList) => {
             const iouAmount = IOUUtils.calculateAmount(participantsList.length, props.iouAmount, props.iouCurrencyCode);
+
             return _.map(participantsList, (participant) =>
                 OptionsListUtils.formatMemberForList(participant, {descriptiveText: CurrencyUtils.convertToDisplayString(iouAmount, props.iouCurrencyCode)}),
             );
@@ -166,7 +168,7 @@ function MoneyRequestConfirmationList(props) {
         const unselectedParticipants = _.filter(props.selectedParticipants, (participant) => !participant.selected);
         if (props.hasMultipleParticipants) {
             const formattedSelectedParticipants = getParticipantsWithAmount(selectedParticipants);
-            let formattedParticipantsList = _.union(formattedSelectedParticipants, unselectedParticipants);
+            let formattedParticipantsList = _.map(_.union(formattedSelectedParticipants, unselectedParticipants), OptionsListUtils.formatMemberForList);
 
             if (!canModifyParticipants) {
                 formattedParticipantsList = _.map(formattedParticipantsList, (participant) => ({
@@ -176,11 +178,10 @@ function MoneyRequestConfirmationList(props) {
             }
 
             const myIOUAmount = IOUUtils.calculateAmount(selectedParticipants.length, props.iouAmount, props.iouCurrencyCode, true);
-            const payeeOption = OptionsListUtils.getIOUConfirmationOptionsFromPayeePersonalDetail(
-                payeePersonalDetails,
-                CurrencyUtils.convertToDisplayString(myIOUAmount, props.iouCurrencyCode),
-            );
-            const formattedPayeeOption = OptionsListUtils.formatMemberForList(payeeOption);
+            const formattedPayeeOption = OptionsListUtils.formatMemberForList(payeePersonalDetails, {
+                descriptiveText: CurrencyUtils.convertToDisplayString(myIOUAmount, props.iouCurrencyCode),
+                login: LocalePhoneNumber.formatPhoneNumber(payeePersonalDetails.login),
+            });
 
             sections.push(
                 {
@@ -204,6 +205,7 @@ function MoneyRequestConfirmationList(props) {
             }));
             sections.push({
                 title: translate('common.to'),
+                // Here we know we only have 1 participant, so it's safe to get the first index
                 data: [OptionsListUtils.formatMemberForList(formattedSelectedParticipants[0])],
                 shouldShow: true,
                 indexOffset: 0,
@@ -222,13 +224,6 @@ function MoneyRequestConfirmationList(props) {
         shouldDisablePaidBySection,
         canModifyParticipants,
     ]);
-
-    const selectedOptions = useMemo(() => {
-        if (!props.hasMultipleParticipants) {
-            return [];
-        }
-        return [...selectedParticipants, OptionsListUtils.getIOUConfirmationOptionsFromPayeePersonalDetail(payeePersonalDetails)];
-    }, [selectedParticipants, props.hasMultipleParticipants, payeePersonalDetails]);
 
     /**
      * @param {Object} option
@@ -283,6 +278,7 @@ function MoneyRequestConfirmationList(props) {
 
     const formattedAmount = CurrencyUtils.convertToDisplayString(props.iouAmount, props.iouCurrencyCode);
 
+    // TODO: See footer
     const footerContent = useMemo(() => {
         if (props.isReadOnly) {
             return;
@@ -329,6 +325,7 @@ function MoneyRequestConfirmationList(props) {
                 amount: CurrencyUtils.convertToDisplayString(props.iouAmount, props.iouCurrencyCode),
             })}
             disableKeyboardShortcuts={!canModifyParticipants}
+            footerContent={footerContent}
         >
             {!_.isEmpty(props.receiptPath) ? (
                 <Image

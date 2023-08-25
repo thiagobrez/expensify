@@ -1,21 +1,17 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {View} from 'react-native';
 import PropTypes from 'prop-types';
 import _ from 'underscore';
 import {withOnyx} from 'react-native-onyx';
 import ONYXKEYS from '../../../../ONYXKEYS';
-import styles from '../../../../styles/styles';
-import OptionsSelector from '../../../../components/OptionsSelector';
 import * as OptionsListUtils from '../../../../libs/OptionsListUtils';
 import * as ReportUtils from '../../../../libs/ReportUtils';
+import * as UserUtils from '../../../../libs/UserUtils';
 import CONST from '../../../../CONST';
 import withLocalize, {withLocalizePropTypes} from '../../../../components/withLocalize';
 import compose from '../../../../libs/compose';
 import personalDetailsPropType from '../../../personalDetailsPropType';
-import * as Browser from '../../../../libs/Browser';
 import reportPropTypes from '../../../reportPropTypes';
 import SelectionList from '../../../../components/SelectionList';
-import {getPersonalDetailsForAccountIDs} from '../../../../libs/OptionsListUtils';
 
 const propTypes = {
     /** Beta features list */
@@ -68,13 +64,8 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
 
     const maxParticipantsReached = participants.length === CONST.REPORT.MAXIMUM_PARTICIPANTS;
 
-    console.log('participants', participants);
-    console.log('personalDetails', personalDetails);
-
-    console.log('xxx', getPersonalDetailsForAccountIDs(_.pluck(participants, 'accountID'), personalDetails));
-
     /**
-     * Returns the sections needed for the OptionsSelector
+     * Returns the sections needed for the SelectionList
      *
      * @param {Boolean} maxParticipantsReached
      * @returns {Array}
@@ -83,13 +74,26 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
         const newSections = [];
         let indexOffset = 0;
 
+        const details = OptionsListUtils.getPersonalDetailsForAccountIDs(_.pluck(participants, 'accountID'), personalDetails);
+        const participantsWithAvatars = _.map(participants, (participant) => {
+            const detail = details[participant.accountID];
+
+            return {
+                ...participant,
+                avatar: {
+                    ...participant.avatar,
+                    source: UserUtils.getAvatar(detail.avatar, detail.accountID),
+                },
+            };
+        });
+
         newSections.push({
             title: undefined,
-            data: OptionsListUtils.getParticipantsOptions(participants, personalDetails),
+            data: participantsWithAvatars,
             shouldShow: true,
             indexOffset,
         });
-        indexOffset += participants.length;
+        indexOffset += participantsWithAvatars.length;
 
         if (maxParticipantsReached) {
             return newSections;
@@ -121,7 +125,7 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
         }
 
         return newSections;
-    }, [maxParticipantsReached, newChatOptions, participants, personalDetails, translate]);
+    }, [maxParticipantsReached, newChatOptions.personalDetails, newChatOptions.recentReports, newChatOptions.userToInvite, participants, personalDetails, translate]);
 
     /**
      * Removes a selected option from list if already selected. If not already selected add this option to the list.
@@ -136,17 +140,34 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
             if (isOptionInList) {
                 newSelectedOptions = _.reject(participants, (selectedOption) => selectedOption.accountID === option.accountID);
             } else {
-                newSelectedOptions = [...participants, {accountID: option.accountID, login: option.login, selected: true, searchText: option.searchText}];
+                newSelectedOptions = [
+                    ...participants,
+                    {
+                        ...option,
+                        avatar: {
+                            ...option.avatar,
+                            // `participants` are stored in Onyx, under the `iou` key. Onyx can't merge the state
+                            // if one of the properties is not serializable, so we clean the avatar source when it is a function,
+                            // and restore in the `sections` memo above when rendering the list.
+                            source: _.isFunction(option.avatar.source) ? '' : option.avatar.source,
+                        },
+                        isSelected: true,
+                    },
+                ];
             }
 
             onAddParticipants(newSelectedOptions);
 
             const chatOptions = OptionsListUtils.getNewChatOptions(reports, personalDetails, betas, isOptionInList ? searchTerm : '', newSelectedOptions, CONST.EXPENSIFY_EMAILS);
 
+            const formattedRecentReports = _.map(chatOptions.recentReports, OptionsListUtils.formatMemberForList);
+            const formattedPersonalDetails = _.map(chatOptions.personalDetails, OptionsListUtils.formatMemberForList);
+            const formattedUserToInvite = OptionsListUtils.formatMemberForList(chatOptions.userToInvite);
+
             setNewChatOptions({
-                recentReports: chatOptions.recentReports,
-                personalDetails: chatOptions.personalDetails,
-                userToInvite: chatOptions.userToInvite,
+                recentReports: formattedRecentReports,
+                personalDetails: formattedPersonalDetails,
+                userToInvite: formattedUserToInvite,
             });
         },
         [searchTerm, participants, onAddParticipants, reports, personalDetails, betas, setNewChatOptions],
@@ -157,8 +178,9 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
         Boolean(newChatOptions.userToInvite),
         searchTerm,
         maxParticipantsReached,
-        _.some(participants, (participant) => participant.searchText.toLowerCase().includes(searchTerm.toLowerCase())),
+        _.some(participants, (participant) => participant.text.toLowerCase().includes(searchTerm.toLowerCase())),
     );
+
     const isOptionsDataReady = ReportUtils.isReportDataReady() && OptionsListUtils.isPersonalDetailsReady(personalDetails);
 
     useEffect(() => {
@@ -179,37 +201,15 @@ function MoneyRequestParticipantsSplitSelector({betas, participants, personalDet
         <SelectionList
             canSelectMultiple
             sections={sections}
-            textInputValue={searchTerm}
             textInputLabel={translate('optionsSelector.nameEmailOrPhoneNumber')}
+            textInputValue={searchTerm}
             onChangeText={setSearchTerm}
             onSelectRow={toggleOption}
             headerMessage={headerMessage}
             confirmText={translate('common.next')}
             onConfirm={onStepComplete}
+            showLoadingPlaceholder={!isOptionsDataReady}
         />
-    );
-
-    // TODO: REMOVE
-    return (
-        <View style={[styles.flex1, styles.w100, participants.length > 0 ? safeAreaPaddingBottomStyle : {}]}>
-            <OptionsSelector
-                canSelectMultipleOptions
-                sections={sections}
-                selectedOptions={participants}
-                value={searchTerm}
-                onSelectRow={toggleOption}
-                onChangeText={setSearchTerm}
-                headerMessage={headerMessage}
-                boldStyle
-                shouldShowConfirmButton
-                confirmButtonText={translate('common.next')}
-                onConfirmSelection={onStepComplete}
-                textInputLabel={translate('optionsSelector.nameEmailOrPhoneNumber')}
-                safeAreaPaddingBottomStyle={safeAreaPaddingBottomStyle}
-                shouldShowOptions={isOptionsDataReady}
-                shouldFocusOnSelectRow={!Browser.isMobile()}
-            />
-        </View>
     );
 }
 

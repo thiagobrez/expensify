@@ -47,6 +47,7 @@ function BaseSelectionList({
     headerMessage = '',
     confirmButtonText = '',
     onConfirm,
+    footerContent,
     showScrollIndicator = false,
     showLoadingPlaceholder = false,
     isKeyboardShown = false,
@@ -388,6 +389,8 @@ function BaseSelectionList({
                                 pressOnEnter
                                 enterKeyEventListenerPriority={1}
                             />
+                            {/*TODO: FOOTER PROPS*/}
+                            {footerContent}
                         </FixedFooter>
                     )}
                 </View>
